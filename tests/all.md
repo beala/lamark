@@ -1,5 +1,5 @@
 #A Markdown Document#
-Here's some *normal* markdown. Now we're going to try some latex.
+Here's some *normal* markdown\blog post. Now we're going to try some latex.
 
 Here we go:
 

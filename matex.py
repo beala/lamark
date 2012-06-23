@@ -76,13 +76,22 @@ class LSTART(token):
     def __repr__(self):
         return "LSTART()"
 
+    def __str__(self):
+        return MdLexer.t_LSTART
+
 class LEND(token):
     def __repr__(self):
         return "LEND()"
 
+    def __str__(self):
+        return MdLexer.t_LEND
+
 class ESCAPE(token):
     def __repr__(self):
         return "ESCAPE()"
+
+    def __str__(self):
+        return '\\'
 
 class OTHER(token):
     def __init__(self, string):
@@ -91,49 +100,47 @@ class OTHER(token):
     def __repr__(self):
         return "OTHER(%s)" % repr(self.string)
 
+    def __str__(self):
+        return self.string
+
 class MdParser(object):
     def __init__(self, args):
         self.args = args
 
-    def parse(self, string):
-        ff = 0
+    def parse(self, token_stream):
         ast = []
-        token = ""
-        for n in xrange(len(string)):
-            if n < ff:
+        acc = ""
+        last_escaped = False
+        for token in token_stream:
+            if last_escaped:
+                last_escaped = False
+                acc += MdLexer.t_ESCAPE + str(token)
                 continue
-            elif string[n] == "\\":
-                token += string[n] + string[n+1]
-                ff = n + 2
-            elif string[n] == "@":
-                maybe_latex = self.parse_latex(string, n+1)
-                if maybe_latex != None:
-                    (m, latex) = maybe_latex
-                    ast += [Markdown(token)]
-                    ast += [latex]
-                    token =""
-                else:
-                    token += string[n]
-            else:
-                token += string[n]
-        ast += [Markdown(token)]
-        return ast
 
-    def parse_latex(self, string, n):
-        if string[n:n+2] != "la":
-            return None
-        token = ""
-        ff = 0
-        for n in xrange(n+2, len(string)):
-            if n < ff:
+            if isinstance(token, ESCAPE):
+                last_escaped = True
                 continue
-            elif string[n] == "\\":
-                token += string[n] + string[n+1]
-                ff = n + 2
-            elif string[n] == "@":
-                return (n+1, Latex(token))
-            else:
-                token += string[n]
+
+            if isinstance(token, LSTART):
+                ast.append(Markdown(acc))
+                acc = ""
+                continue
+
+            if isinstance(token, LEND):
+                ast.append(Latex(acc))
+                acc = ""
+                continue
+
+            if isinstance(token, OTHER):
+                acc += str(token)
+                continue
+
+        if isinstance(ast[-1], Markdown):
+            ast[-1] = Markdown((str(Markdown) + acc))
+        else:
+            ast.append(Markdown(acc))
+
+        return ast
 
 class Markdown(object):
     def __init__(self, string):
@@ -142,6 +149,9 @@ class Markdown(object):
     def __repr__(self):
         return "Markdown(%s)" % repr(self.string)
 
+    def __str__(self):
+        return self.string
+
 class Latex(object):
     def __init__(self, string):
         self.string = string
@@ -149,16 +159,21 @@ class Latex(object):
     def __repr__(self):
         return "Latex(%s)" % repr(self.string)
 
+    def __str__(self):
+        return self.string
+
 def main():
     cli_parser = argparse.ArgumentParser(
-            description="A LATEX parser for Markdown")
+            description="A LATEX processor for Markdown")
     cli_parser.add_argument("FILE")
     args = cli_parser.parse_args()
 
     l = MdLexer(args)
-    print l.lex(open(args.FILE).read())
-    #m = MdParser(args)
-    #print m.parse(open(args.FILE).read())
+    token_stream = l.lex(open(args.FILE).read())
+    print token_stream
+    m = MdParser(args)
+    ast = m.parse(token_stream)
+    print ast
 
 if __name__=="__main__":
     main()
