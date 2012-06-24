@@ -1,9 +1,18 @@
 import argparse
+import re
 
 class MdLexer(object):
-    t_LSTART = "#@"
-    t_LEND = "@#"
     t_ESCAPE = "\\"
+    t_OPEN = r"{%"
+    t_CLOSE = r"%}"
+    t_LSTART_KEYWORD = r"\s*latex\s*"
+    t_LEND_KEYWORD = r"\s*endlatex\s*"
+    t_IDENT = r"[a-zA-Z0-9_]*"
+    t_ASSIGN = r"\s*=\s*"
+    t_VALUE = r'"(\w|\\"|\s)*"'
+    t_LSTART = r'{%\s*latex(\s*[a-zA-Z0-9_]*\s*=\s*"(\w|\\"|\s)*"\s*)*\s*%}'
+    #t_LSTART = r"{%\s*latex(\s*\w*\s*)*%}"
+    t_LEND = r"{%\s*endlatex\s*%}"
 
     def __init__(self, args):
         self.args = args
@@ -52,14 +61,18 @@ class MdLexer(object):
         return t_stream
 
     def _test_lstart(self, string, n):
-        if string[n:n+len(self.t_LSTART)] == self.t_LSTART:
-            return (n+len(self.t_LSTART), LSTART())
+        matchObj = re.match(self.t_LSTART, string[n:])
+        if matchObj:
+            n += len(matchObj.group(0))
+            return (n, LSTART(matchObj.group(0)))
         else:
             return (n, None)
 
     def _test_lend(self, string, n):
-        if string[n:n+len(self.t_LEND)] == self.t_LEND:
-            return (n+len(self.t_LEND), LEND())
+        matchObj = re.match(self.t_LEND, string[n:])
+        if matchObj:
+            n += len(matchObj.group(0))
+            return (n, LEND(matchObj.group(0)))
         else:
             return (n, None)
 
@@ -73,18 +86,24 @@ class token(object):
     pass
 
 class LSTART(token):
+    def __init__(self, raw_match):
+        self.raw_match = raw_match
+
     def __repr__(self):
-        return "LSTART()"
+        return "LSTART(%s)" % self.raw_match
 
     def __str__(self):
-        return MdLexer.t_LSTART
+        return self.raw_match
 
 class LEND(token):
+    def __init__(self, raw_match):
+        self.raw_match = raw_match
+
     def __repr__(self):
-        return "LEND()"
+        return "LEND(%s)" % self.raw_match
 
     def __str__(self):
-        return MdLexer.t_LEND
+        return self.raw_match
 
 class ESCAPE(token):
     def __repr__(self):
@@ -111,6 +130,7 @@ class MdParser(object):
         ast = []
         acc = ""
         last_escaped = False
+        current_args = ""
         for token in token_stream:
             if last_escaped:
                 # If last token was escape, add the escape
@@ -128,12 +148,14 @@ class MdParser(object):
                 # markdown. Add md node to AST
                 ast.append(Markdown(acc))
                 acc = ""
+                current_args = token.raw_match
                 continue
 
             if isinstance(token, LEND):
                 # End of Latex section. Add Latex node to AST
-                ast.append(Latex(acc))
+                ast.append(Latex(acc, current_args))
                 acc = ""
+                current_args = ""
                 continue
 
             if isinstance(token, OTHER):
@@ -144,7 +166,7 @@ class MdParser(object):
         if isinstance(ast[-1], Markdown):
             # If the last node is md, merge the remainder in the accumulator
             # into the last node.
-            ast[-1] = Markdown((str(a[-1]) + acc))
+            ast[-1] = Markdown((str(ast[-1]) + acc))
         else:
             # Otherwise, add a final md node to the AST
             ast.append(Markdown(acc))
@@ -162,11 +184,12 @@ class Markdown(object):
         return self.string
 
 class Latex(object):
-    def __init__(self, string):
+    def __init__(self, string, args):
         self.string = string
+        self.args = args
 
     def __repr__(self):
-        return "Latex(%s)" % repr(self.string)
+        return "Latex(%s, %s)" % (repr(self.args), repr(self.string))
 
     def __str__(self):
         return self.string
