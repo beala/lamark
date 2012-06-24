@@ -4,7 +4,7 @@ Here's some *normal* markdown\blog post. Now we're going to try some latex.
 Here we go:
 
 #@
-Here's some latex.
+\#@Here's some latex.
 @#
 
 And here's some #@inline latex@#.

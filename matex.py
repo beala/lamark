@@ -113,6 +113,8 @@ class MdParser(object):
         last_escaped = False
         for token in token_stream:
             if last_escaped:
+                # If last token was escape, add the escape
+                # plus the current token to the accumulator
                 last_escaped = False
                 acc += MdLexer.t_ESCAPE + str(token)
                 continue
@@ -122,22 +124,29 @@ class MdParser(object):
                 continue
 
             if isinstance(token, LSTART):
+                # Beginning of Latex section. Last section must have been
+                # markdown. Add md node to AST
                 ast.append(Markdown(acc))
                 acc = ""
                 continue
 
             if isinstance(token, LEND):
+                # End of Latex section. Add Latex node to AST
                 ast.append(Latex(acc))
                 acc = ""
                 continue
 
             if isinstance(token, OTHER):
+                # String section. Flush to accumulator.
                 acc += str(token)
                 continue
 
         if isinstance(ast[-1], Markdown):
-            ast[-1] = Markdown((str(Markdown) + acc))
+            # If the last node is md, merge the remainder in the accumulator
+            # into the last node.
+            ast[-1] = Markdown((str(a[-1]) + acc))
         else:
+            # Otherwise, add a final md node to the AST
             ast.append(Markdown(acc))
 
         return ast
@@ -162,18 +171,51 @@ class Latex(object):
     def __str__(self):
         return self.string
 
+class MdCodeGen(object):
+    """ Last stage. Generate Markdown from the AST
+    """
+    def __init__(self, args):
+        self.output_fn = args.OUTPUT_FILE
+        self.lg = LatexGen(args)
+
+
+    def generate(self, matex_ast):
+        output_fd = open(self.output_fn, 'w')
+        for node in matex_ast:
+            if isinstance(node, Markdown):
+                output_fd.write(str(node))
+            elif isinstance(node, Latex):
+                output_fd.write(self.lg.generate(str(node)))
+        output_fd.close()
+
+
+class LatexGen(object):
+    """Given a peice of Latex, generate an image, and the markdown
+        necessary to display the image.
+    """
+    def __init__(self, args):
+        pass
+
+    def generate(self, latex_string):
+        return "![Dummy Image Alt Text](placeholder.png)"
+
 def main():
     cli_parser = argparse.ArgumentParser(
             description="A LATEX processor for Markdown")
     cli_parser.add_argument("FILE")
+    cli_parser.add_argument("OUTPUT_FILE")
     args = cli_parser.parse_args()
 
     l = MdLexer(args)
     token_stream = l.lex(open(args.FILE).read())
+    print "Token stream:"
     print token_stream
     m = MdParser(args)
     ast = m.parse(token_stream)
+    print "AST:"
     print ast
+    mg = MdCodeGen(args)
+    mg.generate(ast)
 
 if __name__=="__main__":
     main()
