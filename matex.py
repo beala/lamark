@@ -194,6 +194,127 @@ class Latex(object):
     def __str__(self):
         return self.string
 
+class TagParser(object):
+    t_ARG = r"\w+"
+    t_FUNC_NAME = r"{%\s*(\w+)"
+    t_ASSIGN = r"="
+    t_VALUE = r'"([a-zA-Z0-9_ ]*)"'
+    t_IGNORE = r"\s*|%\}"
+
+    def __init__(self, args):
+        pass
+
+    def parse(self, ast):
+        new_ast = []
+        for node in ast:
+            if isinstance(node, Markdown):
+                new_ast.append(node)
+                continue
+            elif isinstance(node, Latex):
+                new_ast.append(Latex(node.string, self._process_tag(node)))
+                continue
+        return new_ast
+
+    def _process_tag(self, latex_tag):
+        tag_token_stream = self._lex_tag(latex_tag)
+        return self._parse_tag(tag_token_stream)
+
+    def _lex_tag(self, latex_tag):
+        token_tests = [
+                self._test_ignore,
+                self._test_func_name,
+                self._test_arg,
+                self._test_value,
+                self._test_assign,
+                ]
+        i = 0
+        ff = 0
+        t_stream = []
+        for i in xrange(len(latex_tag.args)):
+            if i < ff:
+                continue
+            for test in token_tests:
+                (ff, node)= test(latex_tag.args, i)
+                if i < ff:
+                    # Fast forwarded, but ignore whichever characters
+                    # we've fast forwarded past.
+                    if node == None:
+                        break
+                    t_stream.append(node)
+                    break
+        return t_stream
+
+    def _test_ignore(self, string, n):
+        matchObj = re.match(self.t_IGNORE, string[n:])
+        if matchObj:
+            n += len(matchObj.group(0))
+        return (n, None)
+
+    def _test_arg(self, string, n):
+        matchObj = re.match(self.t_ARG, string[n:])
+        if matchObj:
+            n += len(matchObj.group(0))
+            return (n, ARG(matchObj.group(0)))
+        else:
+            return (n, None)
+
+    def _test_value(self, string, n):
+        matchObj = re.match(self.t_VALUE, string[n:])
+        if matchObj:
+            n += len(matchObj.group(0))
+            return (n, VALUE(matchObj.group(1)))
+        else:
+            return (n, None)
+
+    def _test_assign(self, string, n):
+        matchObj = re.match(self.t_ASSIGN, string[n:])
+        if matchObj:
+            n += len(matchObj.group(0))
+            return (n, ASSIGN(matchObj.group(0)))
+        else:
+            return (n, None)
+
+    def _test_func_name(self, string, n):
+        matchObj = re.match(self.t_FUNC_NAME, string[n:])
+        if matchObj:
+            n += len(matchObj.group(0))
+            return (n, FUNC_NAME(matchObj.group(1)))
+        else:
+            return (n, None)
+
+
+    def _parse_tag(self, tag_token_stream):
+        return tag_token_stream
+
+class ARG(object):
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return "ARG(%s)" % repr(self.value)
+
+class FUNC_NAME(object):
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return "FUNC_NAME(%s)" % repr(self.value)
+
+class VALUE(object):
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return "VALUE(%s)" % repr(self.value)
+
+class ASSIGN(object):
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return "ASSIGN(%s)" % repr(self.value)
+
+
 class MdCodeGen(object):
     """ Last stage. Generate Markdown from the AST
     """
@@ -237,8 +358,12 @@ def main():
     ast = m.parse(token_stream)
     print "AST:"
     print ast
-    mg = MdCodeGen(args)
-    mg.generate(ast)
+    tagparser = TagParser(args)
+    tag_ast = tagparser.parse(ast)
+    print "Tag AST:"
+    print tag_ast
+    #mg = MdCodeGen(args)
+    #mg.generate(ast)
 
 if __name__=="__main__":
     main()
