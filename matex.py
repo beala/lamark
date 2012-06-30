@@ -284,7 +284,59 @@ class TagParser(object):
 
 
     def _parse_tag(self, tag_token_stream):
-        return tag_token_stream
+        dict_acc = {}
+        return self._parse_func_name(tag_token_stream, dict_acc)
+
+    def _parse_func_name(self, t_stream, dict_acc):
+        if isinstance(t_stream[0], FUNC_NAME):
+            dict_acc["func_name"] = str(t_stream[0])
+            res = self._parse_arg(t_stream[1:], dict_acc)
+            if res != None:
+                return res
+            else:
+                return dict_acc
+        else:
+            # TODO: Throw parsing error.
+            pass
+
+    def _parse_arg(self, t_stream, dict_acc):
+        if len(t_stream) == 0:
+            return dict_acc
+        if isinstance(t_stream[0], ARG):
+            res = self._parse_assign(
+                    t_stream[1:],
+                    dict_acc,
+                    str(t_stream[0])
+                    )
+            if res != None:
+                return res
+            else:
+                # TODO: Throw parsing error. Must be followed by assign.
+                pass
+
+    def _parse_assign(self, t_stream, dict_acc, arg_name):
+        if len(t_stream) == 0:
+            return dict_acc
+        if isinstance(t_stream[0], ASSIGN):
+            res = self._parse_value(
+                    t_stream[1:],
+                    dict_acc,
+                    arg_name
+                    )
+            if res != None:
+                return res
+            else:
+                # TODO: Throw error. Must be followed by value
+                pass
+
+    def _parse_value(self, t_stream, dict_acc, arg_name):
+        if len(t_stream) == 0:
+            return dict_acc
+        if isinstance(t_stream[0], VALUE):
+            dict_acc[arg_name] = str(t_stream[0])
+            res = self._parse_arg(t_stream[1:], dict_acc)
+            if res != None:
+                return res
 
 class ARG(object):
     def __init__(self, value):
@@ -293,12 +345,18 @@ class ARG(object):
     def __repr__(self):
         return "ARG(%s)" % repr(self.value)
 
+    def __str__(self):
+        return str(self.value)
+
 class FUNC_NAME(object):
     def __init__(self, value):
         self.value = value
 
     def __repr__(self):
         return "FUNC_NAME(%s)" % repr(self.value)
+
+    def __str__(self):
+        return str(self.value)
 
 class VALUE(object):
     def __init__(self, value):
@@ -307,6 +365,9 @@ class VALUE(object):
     def __repr__(self):
         return "VALUE(%s)" % repr(self.value)
 
+    def __str__(self):
+        return str(self.value)
+
 class ASSIGN(object):
     def __init__(self, value):
         self.value = value
@@ -314,6 +375,8 @@ class ASSIGN(object):
     def __repr__(self):
         return "ASSIGN(%s)" % repr(self.value)
 
+    def __str__(self):
+        return str(self.value)
 
 class MdCodeGen(object):
     """ Last stage. Generate Markdown from the AST
