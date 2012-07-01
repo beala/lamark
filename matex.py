@@ -1,5 +1,6 @@
 import argparse
 import re
+import subprocess
 
 class MdLexer(object):
     t_ESCAPE = "\\"
@@ -401,10 +402,51 @@ class LatexGen(object):
         necessary to display the image.
     """
     def __init__(self, args):
+        self.fn_gen = self._gen_name()
         pass
 
     def generate(self, latex_string):
-        return "![Dummy Image Alt Text](placeholder.png)"
+        image_name = self._compile_latex(latex_string)
+        return "![%s](%s)" % (image_name, image_name)
+
+    def _gen_name(self):
+        counter = 0
+        while True:
+            yield str(counter) + ".png"
+            counter += 1
+
+    def _compile_latex(self, latex_string):
+        boilerplate = (
+        """
+        \documentclass{article}
+        \pagestyle{empty}
+        \\begin{document}
+        %s
+        \end{document}
+        """)
+
+        tex_tmp = open("textemp.tex", 'w')
+        tex_tmp.write(boilerplate % latex_string)
+        tex_tmp.close()
+
+        latex_call = [
+                "latex",
+                "textemp.tex",
+                ]
+        subprocess.check_call(latex_call)
+
+        image_name = self.fn_gen.next()
+        dvipng_call = [
+                "dvipng",
+                "-T", "tight",
+                "-x 2000",
+                "-z 6",
+                "textemp.dvi",
+                "-o %s" % image_name]
+        subprocess.check_call(dvipng_call)
+
+        return image_name
+
 
 def main():
     cli_parser = argparse.ArgumentParser(
@@ -425,8 +467,8 @@ def main():
     tag_ast = tagparser.parse(ast)
     print "Tag AST:"
     print tag_ast
-    #mg = MdCodeGen(args)
-    #mg.generate(ast)
+    mg = MdCodeGen(args)
+    mg.generate(ast)
 
 if __name__=="__main__":
     main()
