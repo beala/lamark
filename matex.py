@@ -1,18 +1,19 @@
 import argparse
 import re
 import subprocess
+import tempfile
+import os
 
 class MdLexer(object):
     t_ESCAPE = "\\"
-    t_OPEN = r"{%"
-    t_CLOSE = r"%}"
-    t_LSTART_KEYWORD = r"\s*latex\s*"
-    t_LEND_KEYWORD = r"\s*endlatex\s*"
-    t_IDENT = r"[a-zA-Z0-9_]*"
-    t_ASSIGN = r"\s*=\s*"
-    t_VALUE = r'"(\w|\\"|\s)*"'
-    t_LSTART = r'{%\s*latex(\s*[a-zA-Z0-9_]*\s*=\s*"(\w|\\"|\s)*"\s*)*\s*%}'
-    #t_LSTART = r"{%\s*latex(\s*\w*\s*)*%}"
+    #t_OPEN = r"{%"
+    #t_CLOSE = r"%}"
+    #t_LSTART_KEYWORD = r"\s*latex\s*"
+    #t_LEND_KEYWORD = r"\s*endlatex\s*"
+    #t_IDENT = r"[a-zA-Z0-9_]*"
+    #t_ASSIGN = r"\s*=\s*"
+    #t_VALUE = r'"(\w|\\"|\s)*"'
+    t_LSTART = r'{%\s*latex(\s*[a-zA-Z0-9_]*\s*=\s*"(\w|\\"|\s|\.|/|:)*"\s*)*\s*%}'
     t_LEND = r"{%\s*endlatex\s*%}"
 
     def __init__(self, args):
@@ -134,10 +135,15 @@ class MdParser(object):
         current_args = ""
         for token in token_stream:
             if last_escaped:
-                # If last token was escape, add the escape
-                # plus the current token to the accumulator
+                # If last token was an escape
                 last_escaped = False
-                acc += MdLexer.t_ESCAPE + str(token)
+                if isinstance(token, LSTART) or isinstance(token, LEND):
+                    # If you've escaped a start/end latex tag, then only
+                    # keep the tag.
+                    acc += str(token)
+                else:
+                    # Otherwise, keep both.
+                    acc += MdLexer.t_ESCAPE + str(token)
                 continue
 
             if isinstance(token, ESCAPE):
@@ -199,7 +205,7 @@ class TagParser(object):
     t_ARG = r"\w+"
     t_FUNC_NAME = r"{%\s*(\w+)"
     t_ASSIGN = r"="
-    t_VALUE = r'"([a-zA-Z0-9_ ]*)"'
+    t_VALUE = r'"([a-zA-Z0-9_ \./:]*)"'
     t_IGNORE = r"\s*|%\}"
 
     def __init__(self, args):
@@ -388,26 +394,66 @@ class MdCodeGen(object):
 
 
     def generate(self, matex_ast):
-        output_fd = open(self.output_fn, 'w')
+        #output_fd = open(self.output_fn, 'w')
+        pure_md_acc = ""
         for node in matex_ast:
             if isinstance(node, Markdown):
-                output_fd.write(str(node))
+                pure_md_acc += str(node)
+                #output_fd.write(str(node))
             elif isinstance(node, Latex):
-                output_fd.write(self.lg.generate(str(node)))
-        output_fd.close()
+                pure_md_acc += str(self.lg.generate(str(node), node.args))
+                #output_fd.write(self.lg.generate(str(node)))
+        #output_fd.close()
+        return pure_md_acc
 
 
 class LatexGen(object):
     """Given a peice of Latex, generate an image, and the markdown
         necessary to display the image.
     """
+    DICT_image_zoom = "imgZoom"
+    DICT_fn_prefix = "path"
+    DICT_fn = "imgName"
+    DICT_alt_txt = "alt"
+
     def __init__(self, args):
-        self.fn_gen = self._gen_name()
+        self._fn_gen = self._gen_name()
+        self._reset_prefs()
         pass
 
-    def generate(self, latex_string):
+    def _reset_prefs(self):
+        # Image prefs
+        self.PREF_image_zoom = 2000
+        # Filename prefs
+        self.PREF_fn_prefix = ""
+        self.PREF_fn = "" # Use default filename generator.
+        # HTML prefs
+        self.PREF_alt_txt = "" # Use filename as alt txt
+
+    def generate(self, latex_string, latex_args_dict):
+        self._reset_prefs()
+        self._process_tag_args(latex_args_dict)
         image_name = self._compile_latex(latex_string)
-        return "![%s](%s)" % (image_name, image_name)
+        if self.PREF_alt_txt == "":
+            alt_text = image_name
+        else:
+            alt_text = self.PREF_alt_txt
+        return "![%s](%s)" % (alt_text, image_name)
+
+    def _process_tag_args(self, args_dict):
+        my_attrs = dir(self)
+        my_dict_attrs = []
+        for attr in my_attrs:
+            if re.match(r"DICT", attr):
+                my_dict_attrs.append(attr)
+
+        print my_dict_attrs
+        for attr in my_dict_attrs:
+            if getattr(self,attr) in args_dict:
+                pref_name = "PREF" + attr[4:]
+                print pref_name
+                print args_dict
+                setattr(self, pref_name, args_dict[getattr(self,attr)])
 
     def _gen_name(self):
         counter = 0
@@ -421,29 +467,39 @@ class LatexGen(object):
         \documentclass{article}
         \pagestyle{empty}
         \\begin{document}
-        %s
+        $%s$
         \end{document}
         """)
 
-        tex_tmp = open("textemp.tex", 'w')
+
+        tex_tmp = tempfile.NamedTemporaryFile(suffix=".tex", delete=False)
         tex_tmp.write(boilerplate % latex_string)
         tex_tmp.close()
 
+
         latex_call = [
                 "latex",
-                "textemp.tex",
+                "-output-directory=latex-tmp",
+                tex_tmp.name,
                 ]
         subprocess.check_call(latex_call)
 
-        image_name = self.fn_gen.next()
+        if self.PREF_fn == "":
+            image_name = self._fn_gen.next()
+        else:
+            image_name = self.PREF_fn
         dvipng_call = [
                 "dvipng",
                 "-T", "tight",
-                "-x 2000",
-                "-z 6",
-                "textemp.dvi",
-                "-o %s" % image_name]
+                "-x", str(self.PREF_image_zoom),
+                "-z", "6",
+                "latex-tmp/" + os.path.basename(tex_tmp.name)[0:-3] + "dvi",
+                "-o", "%s" % image_name]
         subprocess.check_call(dvipng_call)
+        os.remove(tex_tmp.name)
+
+        if self.PREF_fn_prefix != "":
+            image_name = self.PREF_fn_prefix + image_name
 
         return image_name
 
@@ -468,7 +524,11 @@ def main():
     print "Tag AST:"
     print tag_ast
     mg = MdCodeGen(args)
-    mg.generate(ast)
+    md = mg.generate(tag_ast)
+    print md
+    output_f = open(args.OUTPUT_FILE, 'w')
+    output_f.write(md)
+    output_f.close()
 
 if __name__=="__main__":
     main()
