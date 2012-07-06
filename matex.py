@@ -3,6 +3,7 @@ import re
 import subprocess
 import tempfile
 import os
+import shutil
 
 class MdLexer(object):
     t_ESCAPE = "\\"
@@ -394,16 +395,12 @@ class MdCodeGen(object):
 
 
     def generate(self, matex_ast):
-        #output_fd = open(self.output_fn, 'w')
         pure_md_acc = ""
         for node in matex_ast:
             if isinstance(node, Markdown):
                 pure_md_acc += str(node)
-                #output_fd.write(str(node))
             elif isinstance(node, Latex):
                 pure_md_acc += str(self.lg.generate(str(node), node.args))
-                #output_fd.write(self.lg.generate(str(node)))
-        #output_fd.close()
         return pure_md_acc
 
 
@@ -415,6 +412,8 @@ class LatexGen(object):
     DICT_fn_prefix = "path"
     DICT_fn = "imgName"
     DICT_alt_txt = "alt"
+
+    TEX_TMP_NAME = "textemp.tex"
 
     def __init__(self, args):
         self._fn_gen = self._gen_name()
@@ -429,6 +428,11 @@ class LatexGen(object):
         self.PREF_fn = "" # Use default filename generator.
         # HTML prefs
         self.PREF_alt_txt = "" # Use filename as alt txt
+
+    def canProcess(func_name):
+        if func_name == "latex":
+            return True
+        return False
 
     def generate(self, latex_string, latex_args_dict):
         self._reset_prefs()
@@ -462,41 +466,44 @@ class LatexGen(object):
             counter += 1
 
     def _compile_latex(self, latex_string):
-        boilerplate = (
-        """
-        \documentclass{article}
-        \pagestyle{empty}
-        \\begin{document}
-        $%s$
-        \end{document}
-        """)
+        boilerplate_header = (
+                """
+                \documentclass{article}
+                \pagestyle{empty}
+                \\begin{document}
+                $""")
+        boilerplate_footer = "$\n\end{document}"
 
-
-        tex_tmp = tempfile.NamedTemporaryFile(suffix=".tex", delete=False)
-        tex_tmp.write(boilerplate % latex_string)
+        # Create tmp dir and tmp file to write LaTeX to.
+        tex_tmp_dir = tempfile.mkdtemp()
+        tex_tmp = open(tex_tmp_dir + "/" + self.TEX_TMP_NAME, "w")
+        tex_tmp.write(boilerplate_header + latex_string + boilerplate_footer)
         tex_tmp.close()
+        try:
+            # Call latex to convert tmp tex file to dvi.
+            latex_call = [
+                    "latex",
+                    "-output-directory=" + tex_tmp_dir,
+                    tex_tmp.name,
+                    ]
+            subprocess.check_call(latex_call)
 
-
-        latex_call = [
-                "latex",
-                "-output-directory=latex-tmp",
-                tex_tmp.name,
-                ]
-        subprocess.check_call(latex_call)
-
-        if self.PREF_fn == "":
-            image_name = self._fn_gen.next()
-        else:
-            image_name = self.PREF_fn
-        dvipng_call = [
-                "dvipng",
-                "-T", "tight",
-                "-x", str(self.PREF_image_zoom),
-                "-z", "6",
-                "latex-tmp/" + os.path.basename(tex_tmp.name)[0:-3] + "dvi",
-                "-o", "%s" % image_name]
-        subprocess.check_call(dvipng_call)
-        os.remove(tex_tmp.name)
+            # Generate file for png and convert dvi to png
+            if self.PREF_fn == "":
+                image_name = self._fn_gen.next()
+            else:
+                image_name = self.PREF_fn
+            dvipng_call = [
+                    "dvipng",
+                    "-T", "tight",
+                    "-x", str(self.PREF_image_zoom),
+                    "-z", "6",
+                    tex_tmp.name[0:-3] + "dvi",
+                    "-o", "%s" % image_name]
+            subprocess.check_call(dvipng_call)
+        finally:
+            # Remove all tmp file by deleting the dir
+            shutil.rmtree(tex_tmp_dir)
 
         if self.PREF_fn_prefix != "":
             image_name = self.PREF_fn_prefix + image_name
@@ -526,9 +533,8 @@ def main():
     mg = MdCodeGen(args)
     md = mg.generate(tag_ast)
     print md
-    output_f = open(args.OUTPUT_FILE, 'w')
-    output_f.write(md)
-    output_f.close()
+    with open(args.OUTPUT_FILE, 'w') as output_f:
+        output_f.write(md)
 
 if __name__=="__main__":
     main()
