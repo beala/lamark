@@ -16,9 +16,35 @@ class LatexGen(object):
     TEX_TMP_NAME = "textemp.tex"
 
     def __init__(self, args):
+        """ This initializer SHOULD NOT be used by itself.
+            Use the `with` keyword so the __exit__ and __enter__
+            methods get used.
+        """
         self._fn_gen = self._gen_name()
         self._reset_prefs()
-        pass
+        self._tex_tmp_dir = self._create_tmp_dir()
+        self._image_dir = "."
+        if args.o:
+            self._image_dir = os.path.dirname(args.o)
+        if args.i:
+            self._image_dir = args.i
+        if self._image_dir[-1] != "/":
+            self._image_dir = self._image_dir + "/"
+        self._check_preconditions()
+
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        shutil.rmtree(self._tex_tmp_dir)
+
+    def _create_tmp_dir(self):
+        return tempfile.mkdtemp()
+
+    def _check_preconditions(self):
+        if not os.path.exists(self._image_dir):
+            raise IOError("ERROR: Image dir does not exist.")
 
     def _reset_prefs(self):
         # Image prefs
@@ -75,35 +101,32 @@ class LatexGen(object):
         boilerplate_footer = "$\n\end{document}"
 
         # Create tmp dir and tmp file to write LaTeX to.
-        tex_tmp_dir = tempfile.mkdtemp()
-        tex_tmp = open(tex_tmp_dir + "/" + self.TEX_TMP_NAME, "w")
+        tex_tmp = open(self._tex_tmp_dir + "/" + self.TEX_TMP_NAME, "w")
         tex_tmp.write(boilerplate_header + latex_string + boilerplate_footer)
         tex_tmp.close()
-        try:
-            # Call latex to convert tmp tex file to dvi.
-            latex_call = [
-                    "latex",
-                    "-output-directory=" + tex_tmp_dir,
-                    tex_tmp.name,
-                    ]
-            subprocess.check_call(latex_call)
 
-            # Generate file for png and convert dvi to png
-            if self.PREF_fn == "":
-                image_name = self._fn_gen.next()
-            else:
-                image_name = self.PREF_fn
-            dvipng_call = [
-                    "dvipng",
-                    "-T", "tight",
-                    "-x", str(self.PREF_image_zoom),
-                    "-z", "6",
-                    tex_tmp.name[0:-3] + "dvi",
-                    "-o", "%s" % image_name]
-            subprocess.check_call(dvipng_call)
-        finally:
-            # Remove all tmp file by deleting the dir
-            shutil.rmtree(tex_tmp_dir)
+        # Call latex to convert tmp tex file to dvi.
+        latex_call = [
+                "latex",
+                "-output-directory=" + self._tex_tmp_dir,
+                tex_tmp.name,
+                ]
+        subprocess.check_call(latex_call)
+
+        # Generate file for png and convert dvi to png
+        if self.PREF_fn == "":
+            image_name = self._fn_gen.next()
+        else:
+            image_name = self.PREF_fn
+        dvipng_call = [
+                "dvipng",
+                "-T", "tight",
+                "-x", str(self.PREF_image_zoom),
+                "-z", "6",
+                tex_tmp.name[0:-3] + "dvi",
+                "-o", self._image_dir + ("%s" % image_name),
+                ]
+        subprocess.check_call(dvipng_call)
 
         if self.PREF_fn_prefix != "":
             image_name = self.PREF_fn_prefix + image_name

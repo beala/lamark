@@ -50,7 +50,7 @@ class MdParser(object):
                 acc += str(token)
                 continue
 
-        if isinstance(ast[-1], mdast.Markdown):
+        if len(ast) > 0 and isinstance(ast[-1], mdast.Markdown):
             # If the last node is md, merge the remainder in the accumulator
             # into the last node.
             ast[-1] = mdast.Markdown((str(ast[-1]) + acc))
