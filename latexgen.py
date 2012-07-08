@@ -3,6 +3,9 @@ import tempfile
 import os
 import shutil
 import re
+import logging
+import sys
+import StringIO
 
 class LatexGen(object):
     """Given a peice of Latex, generate an image, and the markdown
@@ -24,12 +27,14 @@ class LatexGen(object):
         self._reset_prefs()
         self._tex_tmp_dir = self._create_tmp_dir()
         self._image_dir = "."
-        if args.o:
+        if args.o and len(os.path.dirname(args.o)) > 0:
             self._image_dir = os.path.dirname(args.o)
         if args.i:
             self._image_dir = args.i
         if self._image_dir[-1] != "/":
             self._image_dir = self._image_dir + "/"
+
+        self._debug_flag = args.debug
         self._check_preconditions()
 
 
@@ -77,12 +82,10 @@ class LatexGen(object):
             if re.match(r"DICT", attr):
                 my_dict_attrs.append(attr)
 
-        print my_dict_attrs
+        logging.debug(my_dict_attrs)
         for attr in my_dict_attrs:
             if getattr(self,attr) in args_dict:
                 pref_name = "PREF" + attr[4:]
-                print pref_name
-                print args_dict
                 setattr(self, pref_name, args_dict[getattr(self,attr)])
 
     def _gen_name(self):
@@ -105,13 +108,23 @@ class LatexGen(object):
         tex_tmp.write(boilerplate_header + latex_string + boilerplate_footer)
         tex_tmp.close()
 
+        command_out = subprocess.PIPE
+
         # Call latex to convert tmp tex file to dvi.
         latex_call = [
                 "latex",
                 "-output-directory=" + self._tex_tmp_dir,
                 tex_tmp.name,
                 ]
-        subprocess.check_call(latex_call)
+        p = subprocess.Popen(
+                latex_call,
+                stderr=command_out,
+                stdout=command_out)
+
+        out,err = p.communicate()
+        logging.debug(out)
+        if p.returncode:
+            raise CommandException("Error in callto LaTeX: " + str(out))
 
         # Generate file for png and convert dvi to png
         if self.PREF_fn == "":
@@ -126,9 +139,27 @@ class LatexGen(object):
                 tex_tmp.name[0:-3] + "dvi",
                 "-o", self._image_dir + ("%s" % image_name),
                 ]
-        subprocess.check_call(dvipng_call)
+        p = subprocess.Popen(
+                dvipng_call,
+                stdout=command_out,
+                stderr=command_out)
+
+        out,err = p.communicate()
+        logging.debug(out)
+        if p.returncode:
+            raise CommandException("Error in call to dvipng: " + str(out))
 
         if self.PREF_fn_prefix != "":
             image_name = self.PREF_fn_prefix + image_name
 
         return image_name
+
+class CommandException(Exception):
+    def __init__(self, msg=""):
+        self.msg = msg
+
+    def __str__(self):
+        return str(self.msg)
+
+    def __repr(self):
+        return "CommandException(%s)" % repr(self.msg)

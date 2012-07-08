@@ -5,6 +5,7 @@ import mdlexer
 import mdparser
 import tagparser
 import mdcodegen
+import logging
 
 def main():
     cli_parser = argparse.ArgumentParser(
@@ -17,7 +18,7 @@ def main():
     cli_parser.add_argument(
             "-o",
             metavar="FILE",
-            default="./output.md",
+            default=None,
             help=("Output Markdown file. Images will be placed in same " +
                 "dir unless overridden with -i. Defaults to ./output.md."))
     cli_parser.add_argument(
@@ -25,8 +26,19 @@ def main():
             metavar="DIR",
             default=None,
             help="Image directory.")
+    cli_parser.add_argument(
+            "--debug",
+            action='store_true',
+            default=False,
+            help="Turn on debug messages.")
     args = cli_parser.parse_args()
 
+    # Set log level
+    if args.debug:
+        log_lvl = logging.DEBUG
+    else:
+        log_lvl = logging.ERROR
+    logging.basicConfig(level=log_lvl)
     # Get from stdin if file is -
     if args.f == "-":
         input_file = sys.stdin
@@ -35,25 +47,25 @@ def main():
     # Lex
     lexer = mdlexer.MdLexer(args)
     token_stream = lexer.lex(input_file.read())
-    print "Token stream:"
-    print token_stream
+    logging.debug("Token stream:\n" + str(token_stream))
     # Parse
     parser = mdparser.MdParser(args)
     ast = parser.parse(token_stream)
-    print "AST:"
-    print ast
+    logging.debug("AST:\n" + str(ast))
     # Parse tags
     tparser = tagparser.TagParser(args)
     tag_ast = tparser.parse(ast)
-    print "Tag AST:"
-    print tag_ast
+    logging.debug("Tag AST:\n" + str(tag_ast))
     # Gen markdown and images
     code_gen = mdcodegen.MdCodeGen(args)
     md = code_gen.generate(tag_ast)
-    print md
     # Write resultant markdown
-    with open(args.o, 'w') as output_f:
-        output_f.write(md)
+    if args.o:
+        output_file = open(args.o, 'w')
+    else:
+        output_file = sys.stdout
+    with open(args.o, 'w') if args.o else sys.stdout as output_file:
+        output_file.write(md)
 
 if __name__=="__main__":
     main()
