@@ -5,7 +5,6 @@ import shutil
 import re
 import logging
 import sys
-import StringIO
 
 class LatexGen(object):
     """Given a peice of Latex, generate an image, and the markdown
