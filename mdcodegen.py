@@ -1,4 +1,4 @@
-import mdast
+import lmast
 import latexgen
 
 class MdCodeGen(object):
@@ -12,9 +12,9 @@ class MdCodeGen(object):
         pure_md_acc = ""
         with latexgen.LatexGen(self.args) as lg:
             for node in matex_ast:
-                if isinstance(node, mdast.Markdown):
+                if isinstance(node, lmast.Markdown):
                     pure_md_acc += str(node)
-                elif isinstance(node, mdast.Latex):
+                elif isinstance(node, lmast.Latex):
                     pure_md_acc += str(lg.generate(str(node), node.args))
             return pure_md_acc
 

@@ -1,5 +1,5 @@
 import re
-import mdast
+import lmast
 import tagtokens
 
 class TagParser(object):
@@ -15,11 +15,11 @@ class TagParser(object):
     def parse(self, ast):
         new_ast = []
         for node in ast:
-            if isinstance(node, mdast.Markdown):
+            if isinstance(node, lmast.Markdown):
                 new_ast.append(node)
                 continue
-            elif isinstance(node, mdast.Latex):
-                new_ast.append(mdast.Latex(node.string, self._process_tag(node)))
+            elif isinstance(node, lmast.Latex):
+                new_ast.append(lmast.Latex(node.string, self._process_tag(node)))
                 continue
         return new_ast
 

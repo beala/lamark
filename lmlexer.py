@@ -5,7 +5,7 @@ t_ESCAPE = "\\"
 t_LSTART = r'{%\s*latex(\s*[a-zA-Z0-9_]*\s*=\s*"(\w|\\"|\s|\.|/|:)*"\s*)*\s*%}'
 t_LEND = r"{%\s*endlatex\s*%}"
 
-class MdLexer(object):
+class LmLexer(object):
     def __init__(self, args):
         self.args = args
 

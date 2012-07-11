@@ -1,8 +1,8 @@
 import lexertokens
-import mdast
-import mdlexer
+import lmast
+import lmlexer
 
-class MdParser(object):
+class LmParser(object):
     def __init__(self, args):
         self.args = args
 
@@ -23,7 +23,7 @@ class MdParser(object):
                     acc += str(token)
                 else:
                     # Otherwise, keep both.
-                    acc += mdlexer.t_ESCAPE + str(token)
+                    acc += lmlexer.t_ESCAPE + str(token)
                 continue
 
             if isinstance(token, lexertokens.ESCAPE):
@@ -33,14 +33,14 @@ class MdParser(object):
             if isinstance(token, lexertokens.LSTART):
                 # Beginning of Latex section. Last section must have been
                 # markdown. Add md node to AST
-                ast.append(mdast.Markdown(acc))
+                ast.append(lmast.Markdown(acc))
                 acc = ""
                 current_args = token.raw_match
                 continue
 
             if isinstance(token, lexertokens.LEND):
                 # End of Latex section. Add Latex node to AST
-                ast.append(mdast.Latex(acc, current_args))
+                ast.append(lmast.Latex(acc, current_args))
                 acc = ""
                 current_args = ""
                 continue
@@ -50,12 +50,12 @@ class MdParser(object):
                 acc += str(token)
                 continue
 
-        if len(ast) > 0 and isinstance(ast[-1], mdast.Markdown):
+        if len(ast) > 0 and isinstance(ast[-1], lmast.Markdown):
             # If the last node is md, merge the remainder in the accumulator
             # into the last node.
-            ast[-1] = mdast.Markdown((str(ast[-1]) + acc))
+            ast[-1] = lmast.Markdown((str(ast[-1]) + acc))
         else:
             # Otherwise, add a final md node to the AST
-            ast.append(mdast.Markdown(acc))
+            ast.append(lmast.Markdown(acc))
 
         return ast

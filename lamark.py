@@ -1,8 +1,8 @@
 import sys
 
 import argparse
-import mdlexer
-import mdparser
+import lmlexer
+import lmparser
 import tagparser
 import mdcodegen
 import logging
@@ -45,11 +45,11 @@ def main():
     else:
         input_file = open(args.f)
     # Lex
-    lexer = mdlexer.MdLexer(args)
+    lexer = lmlexer.LmLexer(args)
     token_stream = lexer.lex(input_file.read())
     logging.debug("Token stream:\n" + str(token_stream))
     # Parse
-    parser = mdparser.MdParser(args)
+    parser = lmparser.LmParser(args)
     ast = parser.parse(token_stream)
     logging.debug("AST:\n" + str(ast))
     # Parse tags
