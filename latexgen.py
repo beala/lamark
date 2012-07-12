@@ -65,6 +65,9 @@ class LatexGen(object):
         return False
 
     def generate(self, latex_string, latex_args_dict):
+        # Ignore empty strings
+        if not latex_string.strip():
+            return ""
         self._reset_prefs()
         self._process_tag_args(latex_args_dict)
         image_name = self._compile_latex(latex_string)
@@ -113,6 +116,7 @@ class LatexGen(object):
         latex_call = [
                 "latex",
                 "-output-directory=" + self._tex_tmp_dir,
+                "-halt-on-error",
                 tex_tmp.name,
                 ]
         p = subprocess.Popen(

@@ -92,28 +92,38 @@ class TagParser(object):
 
 
     def _parse_tag(self, tag_token_stream):
-        dict_acc = {}
-        return self._parse_func_name(tag_token_stream, dict_acc)
+        args = []
+        kwargs = {}
+        return self._parse_func_name(tag_token_stream, args, kwargs)
 
-    def _parse_func_name(self, t_stream, dict_acc):
+    def _parse_func_name(self, t_stream, args, kwargs):
         if isinstance(t_stream[0], tagtokens.FUNC_NAME):
-            dict_acc["func_name"] = str(t_stream[0])
-            res = self._parse_arg(t_stream[1:], dict_acc)
+            kwargs["func_name"] = str(t_stream[0])
+            res = self._parse_arg(t_stream[1:], args, kwargs)
+            if res != None:
+                return res
+            res = self._parse_value(
+                    t_stream[1:],
+                    args,
+                    kwargs,
+                    None
+                    )
             if res != None:
                 return res
             else:
-                return dict_acc
+                return args, kwargs
         else:
             # TODO: Throw parsing error.
             pass
 
-    def _parse_arg(self, t_stream, dict_acc):
+    def _parse_arg(self, t_stream, args, kwargs):
         if len(t_stream) == 0:
-            return dict_acc
+            return args, kwargs
         if isinstance(t_stream[0], tagtokens.ARG):
             res = self._parse_assign(
                     t_stream[1:],
-                    dict_acc,
+                    args,
+                    kwargs,
                     str(t_stream[0])
                     )
             if res != None:
@@ -122,13 +132,14 @@ class TagParser(object):
                 # TODO: Throw parsing error. Must be followed by assign.
                 pass
 
-    def _parse_assign(self, t_stream, dict_acc, arg_name):
+    def _parse_assign(self, t_stream, args, kwargs, arg_name):
         if len(t_stream) == 0:
-            return dict_acc
+            return args, kwargs
         if isinstance(t_stream[0], tagtokens.ASSIGN):
             res = self._parse_value(
                     t_stream[1:],
-                    dict_acc,
+                    args,
+                    kwargs,
                     arg_name
                     )
             if res != None:
@@ -137,12 +148,24 @@ class TagParser(object):
                 # TODO: Throw error. Must be followed by value
                 pass
 
-    def _parse_value(self, t_stream, dict_acc, arg_name):
+    def _parse_value(self, t_stream, args, kwargs, arg_name):
         if len(t_stream) == 0:
-            return dict_acc
+            return args, kwargs
         if isinstance(t_stream[0], tagtokens.VALUE):
-            dict_acc[arg_name] = str(t_stream[0])
-            res = self._parse_arg(t_stream[1:], dict_acc)
+            if(arg_name):
+                kwargs[arg_name] = str(t_stream[0])
+            else:
+                args.append(str(t_stream[0]))
+            res = self._parse_arg(t_stream[1:], args, kwargs)
             if res != None:
                 return res
-
+            res = self._parse_value(
+                    t_stream[1:],
+                    args,
+                    kwargs,
+                    None
+                    )
+            if res != None:
+                return res
+            else:
+                return args, kwargs
