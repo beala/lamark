@@ -1,6 +1,8 @@
 import lexertokens
 import lmast
 import lmlexer
+import tokenstream
+import lamarksyntaxerror
 
 class LmParser(object):
     def __init__(self, args):
@@ -12,8 +14,7 @@ class LmParser(object):
         last_escaped = False
         current_args = ""
         #for token in token_stream:
-        self.token_stream_gen = TokenStream(token_stream)
-        for token in self.token_stream_gen:
+        for token in token_stream:
             if last_escaped:
                 # If last token was an escape
                 last_escaped = False
@@ -40,8 +41,7 @@ class LmParser(object):
                 current_args = token.raw_match
                 self._expect(
                         [lexertokens.ESCAPE, lexertokens.OTHER],
-                        token_stream,
-                        "Expected either escape char or Markdown"
+                        token_stream
                         )
                 continue
 
@@ -52,8 +52,7 @@ class LmParser(object):
                 current_args = ""
                 self._expect(
                         [lexertokens.ESCAPE, lexertokens.OTHER],
-                        token_stream,
-                        "Expected either escape char or Markdown"
+                        token_stream
                         )
                 continue
 
@@ -64,8 +63,7 @@ class LmParser(object):
                         [lexertokens.ESCAPE,
                             lexertokens.LEND,
                             lexertokens.LSTART],
-                        token_stream,
-                        "Expected either escape char, latex end, or latex start"
+                        token_stream
                         )
                 continue
 
@@ -79,46 +77,16 @@ class LmParser(object):
 
         return ast
 
-    def _expect(self, valid_tokens, token_stream, error_msg):
+    def _expect(self, valid_tokens, token_stream):
+        """Looks ahead to the next token to make sure it's one of
+        the valid_tokens. Otherwise, throws a SyntaxError
+        """
         try:
-            if self.token_stream_gen.current().__class__ not in valid_tokens:
-                raise LaMarkSyntaxError(
-                        error_msg,
-                        self.token_stream_gen.current().lineno)
+            if token_stream.peek_ahead().__class__ not in valid_tokens:
+                raise lamarksyntaxerror.LaMarkSyntaxError(
+                        "Unexpected token: %s" % repr(
+                            token_stream.peek_ahead().raw_match),
+                        token_stream.peek_ahead().lineno)
         except StopIteration:
+            # Reached end of token stream
             pass
-
-class LaMarkSyntaxError(Exception):
-    def __init__(self, msg, line):
-        self.msg = msg
-        self.line = line
-
-    def __str__(self):
-        return "Syntax Error on line %d: %s" % (self.line, self.msg)
-
-
-class TokenStream(object):
-    def __init__(self, token_stream):
-        self._token_stream = token_stream
-        self._current_index = 0
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        try:
-            cur_token = self._token_stream[self._current_index]
-        except IndexError:
-            raise StopIteration
-        self._current_index += 1
-        return cur_token
-
-    def current(self):
-        try:
-            return self._token_stream[self._current_index]
-        except:
-            raise StopIteration
-
-    def peek_ahead(self):
-        return self._token_stream[self._current_index + 1]
-

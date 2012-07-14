@@ -1,18 +1,19 @@
 import re
 import lexertokens
+import tokenstream
 
 t_ESCAPE = "\\"
 _func_name = r'(?!end)[a-zA-Z0-9_]+'
 _arg_name = r'[a-zA-Z0-9_]*'
-#_arg_value = r'"(\w|\\"|\s|\.|/|:|_)*"'
 _arg_value  = r'"[a-zA-Z0-9_ \./:]*"'
 _arg = r'(\s*(' + _arg_name + r'\s*=)?\s*' + _arg_value + r'\s*)'
 t_LSTART = r'{%\s*' + _func_name + r'\s*' + _arg + r'*\s*%}'
-#t_LSTART = r'{%\s*(?!end)[a-zA-Z0-9_]+\s*(\s*[a-zA-Z0-9_]*\s*=\s*"(\w|\\"|\s|\.|/|:)*"\s*)*\s*%}'
 t_LEND = r"{%\s*end\s*%}"
 t_NEWLINE = r'\n'
 
 class LmLexer(object):
+    """Lexes the token stream into a list of tokens.
+    """
     def __init__(self, args):
         self.args = args
         # Current number of newlines counted so far.
@@ -23,6 +24,8 @@ class LmLexer(object):
         self._acc_newline_count = 1
 
     def lex(self, string):
+        """Lexes the string into a TokenStream of tokens.
+        """
         # Contains the string position that needs to be fast-fowarded to.
         ff = 0
         # The token string. Nodes get appended to this.
@@ -73,7 +76,7 @@ class LmLexer(object):
             # Flush the `other_acc` if it contains anything.
             t_stream.append(lexertokens.OTHER(other_acc, self._newline_count))
 
-        return t_stream
+        return tokenstream.TokenStream(t_stream)
 
     def _count_newlines(self, string):
         newline_count = 0

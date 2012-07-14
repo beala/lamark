@@ -1,0 +1,4 @@
+###LaMark File With Syntax Errors###
+
+
+{%latex%}{%latex%}a^2{%end%}
