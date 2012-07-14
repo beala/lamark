@@ -5,7 +5,7 @@ import tokenstream
 t_ESCAPE = "\\"
 _func_name = r'(?!end)[a-zA-Z0-9_]+'
 _arg_name = r'[a-zA-Z0-9_]*'
-_arg_value  = r'"[a-zA-Z0-9_ \./:]*"'
+_arg_value  = r'"[a-zA-Z0-9_ \./:\\]*"'
 _arg = r'(\s*(' + _arg_name + r'\s*=)?\s*' + _arg_value + r'\s*)'
 t_LSTART = r'{%\s*' + _func_name + r'\s*' + _arg + r'*\s*%}'
 t_LEND = r"{%\s*end\s*%}"

@@ -5,6 +5,7 @@ import shutil
 import re
 import logging
 import sys
+import lamarkargumenterror
 
 class LatexGen(object):
     """Given a peice of Latex, generate an image, and the markdown
@@ -19,7 +20,8 @@ class LatexGen(object):
             "imgZoom": 2000,
             "path": "",
             "imgName": "",
-            "alt": ""
+            "alt": "",
+            "func_name": "latex"
             }
 
     TEX_TMP_NAME = "textemp.tex"
@@ -62,7 +64,8 @@ class LatexGen(object):
                 "imgZoom": 2000,
                 "path": "",
                 "imgName": "",
-                "alt": ""
+                "alt": "",
+                "func_name": "latex"
                 }
 
     def canProcess(func_name):
@@ -70,12 +73,12 @@ class LatexGen(object):
             return True
         return False
 
-    def generate(self, latex_string, args, kwargs):
+    def generate(self, latex_string, lineno, args, kwargs):
         # Ignore empty strings
         if not latex_string.strip():
             return ""
         self._reset_prefs()
-        self._process_tag_args(args, kwargs)
+        self._process_tag_args(lineno, args, kwargs)
         self._validate_args(args, kwargs)
         image_name = self._compile_latex(latex_string)
         if self.prefs_dict["alt"] == "":
@@ -84,14 +87,21 @@ class LatexGen(object):
             alt_text = self.prefs_dict["alt"]
         return "![%s](%s)" % (alt_text, image_name)
 
-    def _process_tag_args(self, args, kwargs):
+    def _process_tag_args(self, lineno, args, kwargs):
         logging.debug(args)
         self.prefs_dict["path"] = args[0] if len(args) > 0 else ""
         self.prefs_dict["alt"] = args[1] if len(args) > 1 else ""
         self.prefs_dict["imgZoom"] = args[2] if len(args) > 2 else "2000"
         self.prefs_dict["imgName"] = args[3] if len(args) > 3 else ""
         for key, value in kwargs.items():
+            if key not in self.prefs_dict:
+                raise lamarkargumenterror.LaMarkArgumentError(
+                        "Unrecognized argument: %s" % key,
+                        lineno)
             self.prefs_dict[key] = value
+
+        if len(self.prefs_dict["path"]) > 0 and self.prefs_dict["path"][-1] != "/":
+            self.prefs_dict["path"] += "/"
 
     def _validate_args(self, args, kwargs):
         if int(self.prefs_dict["imgZoom"]) > 3000:

@@ -1,12 +1,13 @@
 import re
 import lmast
 import tagtokens
+import lamarksyntaxerror
 
 class TagParser(object):
     t_ARG = r"\w+"
     t_FUNC_NAME = r"{%\s*(\w+)"
     t_ASSIGN = r"="
-    t_VALUE = r'"([a-zA-Z0-9_ \./:]*)"'
+    t_VALUE = r'"([a-zA-Z0-9_ \./:\\]*)"'
     t_IGNORE = r"\s*|%\}"
 
     def __init__(self, args):
@@ -20,7 +21,7 @@ class TagParser(object):
                 continue
             elif isinstance(node, lmast.Latex):
                 args, kwargs = self._process_tag(node)
-                new_ast.append(lmast.Latex(node.string, args, kwargs))
+                new_ast.append(lmast.Latex(node.string, node.lineno, args, kwargs))
                 continue
         return new_ast
 
@@ -115,8 +116,9 @@ class TagParser(object):
             else:
                 return args, kwargs
         else:
-            # TODO: Throw parsing error.
-            pass
+            lamarksyntaxerror.LaMarkSyntaxError(
+                    "Unexpected token: %s" % str(t_stream[0]),
+                    t_stream[0].lineno)
 
     def _parse_arg(self, t_stream, args, kwargs):
         if len(t_stream) == 0:
@@ -131,8 +133,9 @@ class TagParser(object):
             if res != None:
                 return res
             else:
-                # TODO: Throw parsing error. Must be followed by assign.
-                pass
+                lamarksyntaxerror.LaMarkSyntaxError(
+                        "Unexpected token: %s" % str(t_stream[0]),
+                        t_stream[0].lineno)
 
     def _parse_assign(self, t_stream, args, kwargs, arg_name):
         if len(t_stream) == 0:
@@ -147,8 +150,9 @@ class TagParser(object):
             if res != None:
                 return res
             else:
-                # TODO: Throw error. Must be followed by value
-                pass
+                lamarksyntaxerror.LaMarkSyntaxError(
+                        "Unexpected token: %s" % str(t_stream[0]),
+                        t_stream[0].lineno)
 
     def _parse_value(self, t_stream, args, kwargs, arg_name):
         if len(t_stream) == 0:

@@ -36,7 +36,7 @@ class LmParser(object):
             if isinstance(token, lexertokens.LSTART):
                 # Beginning of Latex section. Last section must have been
                 # markdown. Add md node to AST
-                ast.append(lmast.Markdown(acc))
+                ast.append(lmast.Markdown(acc, token.lineno))
                 acc = ""
                 current_args = token.raw_match
                 self._expect(
@@ -47,7 +47,7 @@ class LmParser(object):
 
             if isinstance(token, lexertokens.LEND):
                 # End of Latex section. Add Latex node to AST
-                ast.append(lmast.Latex(acc, current_args))
+                ast.append(lmast.Latex(acc, token.lineno, current_args))
                 acc = ""
                 current_args = ""
                 self._expect(
@@ -59,6 +59,8 @@ class LmParser(object):
             if isinstance(token, lexertokens.OTHER):
                 # String section. Flush to accumulator.
                 acc += str(token)
+                # Save lineno for when it get flushed
+                acc_lineno = token.lineno
                 self._expect(
                         [lexertokens.ESCAPE,
                             lexertokens.LEND,
@@ -70,10 +72,10 @@ class LmParser(object):
         if len(ast) > 0 and isinstance(ast[-1], lmast.Markdown):
             # If the last node is md, merge the remainder in the accumulator
             # into the last node.
-            ast[-1] = lmast.Markdown((str(ast[-1]) + acc))
+            ast[-1] = lmast.Markdown((str(ast[-1]) + acc), ast[-1].lineno)
         else:
             # Otherwise, add a final md node to the AST
-            ast.append(lmast.Markdown(acc))
+            ast.append(lmast.Markdown(acc, acc_lineno))
 
         return ast
 
