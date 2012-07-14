@@ -2,38 +2,45 @@ class token(object):
     pass
 
 class LSTART(token):
-    def __init__(self, raw_match):
+    def __init__(self, raw_match, lineno):
         self.raw_match = raw_match
+        self.lineno = lineno
 
     def __repr__(self):
-        return "LSTART(%s)" % self.raw_match
+        return "LSTART(%s, %d)" % (self.raw_match, self.lineno)
 
     def __str__(self):
         return self.raw_match
 
 class LEND(token):
-    def __init__(self, raw_match):
+    def __init__(self, raw_match, lineno):
         self.raw_match = raw_match
+        self.lineno = lineno
 
     def __repr__(self):
-        return "LEND(%s)" % self.raw_match
+        return "LEND(%s, %d)" % (self.raw_match, self.lineno)
 
     def __str__(self):
         return self.raw_match
 
 class ESCAPE(token):
+    def __init__(self, raw_match, lineno):
+        self.raw_match = raw_match
+        self.lineno = lineno
+
     def __repr__(self):
-        return "ESCAPE()"
+        return "ESCAPE(%s, %d)" % (repr(self.raw_match), self.lineno)
 
     def __str__(self):
-        return '\\'
+        return self.raw_match
 
 class OTHER(token):
-    def __init__(self, string):
+    def __init__(self, string, lineno):
         self.string = string
+        self.lineno = lineno
 
     def __repr__(self):
-        return "OTHER(%s)" % repr(self.string)
+        return "OTHER(%s, %d)" % (repr(self.string), self.lineno)
 
     def __str__(self):
         return self.string
