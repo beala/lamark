@@ -11,7 +11,9 @@ class LmParser(object):
         acc = ""
         last_escaped = False
         current_args = ""
-        for token in token_stream:
+        #for token in token_stream:
+        self.token_stream_gen = TokenStream(token_stream)
+        for token in self.token_stream_gen:
             if last_escaped:
                 # If last token was an escape
                 last_escaped = False
@@ -36,6 +38,11 @@ class LmParser(object):
                 ast.append(lmast.Markdown(acc))
                 acc = ""
                 current_args = token.raw_match
+                self._expect(
+                        [lexertokens.ESCAPE, lexertokens.OTHER],
+                        token_stream,
+                        "Expected either escape char or Markdown"
+                        )
                 continue
 
             if isinstance(token, lexertokens.LEND):
@@ -43,11 +50,23 @@ class LmParser(object):
                 ast.append(lmast.Latex(acc, current_args))
                 acc = ""
                 current_args = ""
+                self._expect(
+                        [lexertokens.ESCAPE, lexertokens.OTHER],
+                        token_stream,
+                        "Expected either escape char or Markdown"
+                        )
                 continue
 
             if isinstance(token, lexertokens.OTHER):
                 # String section. Flush to accumulator.
                 acc += str(token)
+                self._expect(
+                        [lexertokens.ESCAPE,
+                            lexertokens.LEND,
+                            lexertokens.LSTART],
+                        token_stream,
+                        "Expected either escape char, latex end, or latex start"
+                        )
                 continue
 
         if len(ast) > 0 and isinstance(ast[-1], lmast.Markdown):
@@ -60,34 +79,22 @@ class LmParser(object):
 
         return ast
 
-    def parse2(self, token_stream):
-        ast = []
-        stream_obj = TokenStream(token_stream)
-        _parse_start(stream_obj, ast)
-
-    def _parse_start(token_stream, ast):
-        if isinstance(token_stream.cur(), lexertokens.LSTART):
-            token_stream.consume()
-            self._parse_latex(token_stream, ast)
-        elif isinstance(token_stream.cur(), lexertokens.OTHER):
-            other_tok = token_stream.consume()
-            ast.append(lmast.Markdown(str(other_tok)))
-            self_parse_
-        else:
-            raise LaMarkSyntaxError(
-                    "Unexpected symbol: " + str(token_stream.cur()))
-
-    def _parse_latex(token_stream, ast):
-        pass
+    def _expect(self, valid_tokens, token_stream, error_msg):
+        try:
+            if self.token_stream_gen.current().__class__ not in valid_tokens:
+                raise LaMarkSyntaxError(
+                        error_msg,
+                        self.token_stream_gen.current().lineno)
+        except StopIteration:
+            pass
 
 class LaMarkSyntaxError(Exception):
-    def __init__(self, msg, line, col):
+    def __init__(self, msg, line):
         self.msg = msg
         self.line = line
-        self.col = col
 
     def __str__(self):
-        return "Syntax Error: " + str(self.msg)
+        return "Syntax Error on line %d: %s" % (self.line, self.msg)
 
 
 class TokenStream(object):
@@ -95,7 +102,10 @@ class TokenStream(object):
         self._token_stream = token_stream
         self._current_index = 0
 
-    def consume(self):
+    def __iter__(self):
+        return self
+
+    def next(self):
         try:
             cur_token = self._token_stream[self._current_index]
         except IndexError:
@@ -103,12 +113,12 @@ class TokenStream(object):
         self._current_index += 1
         return cur_token
 
-    def cur(self):
+    def current(self):
         try:
             return self._token_stream[self._current_index]
         except:
             raise StopIteration
 
-    def peek(self):
+    def peek_ahead(self):
         return self._token_stream[self._current_index + 1]
 
