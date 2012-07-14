@@ -20,7 +20,8 @@ def main():
             metavar="FILE",
             default=None,
             help=("Output Markdown file. Images will be placed in same " +
-                "dir unless overridden with -i. Defaults to ./output.md."))
+                "dir unless overridden with -i. Defaults to stdout, "+
+                "in which case images will be placed in the pwd."))
     cli_parser.add_argument(
             "-i",
             metavar="DIR",
