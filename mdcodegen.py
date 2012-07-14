@@ -15,6 +15,10 @@ class MdCodeGen(object):
                 if isinstance(node, lmast.Markdown):
                     pure_md_acc += str(node)
                 elif isinstance(node, lmast.Latex):
-                    pure_md_acc += str(lg.generate(str(node), node.args[1]))
+                    pure_md_acc += str(lg.generate(
+                        str(node),
+                        node.args,
+                        node.kwargs)
+                        )
             return pure_md_acc
 

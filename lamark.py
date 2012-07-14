@@ -31,11 +31,18 @@ def main():
             action='store_true',
             default=False,
             help="Turn on debug messages.")
+    cli_parser.add_argument(
+            "--warn",
+            action='store_true',
+            default=False,
+            help="Turn on debug messages.")
     args = cli_parser.parse_args()
 
     # Set log level
     if args.debug:
         log_lvl = logging.DEBUG
+    elif args.warn:
+        log_lvl = logging.WARNING
     else:
         log_lvl = logging.ERROR
     logging.basicConfig(level=log_lvl)

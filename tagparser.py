@@ -19,13 +19,15 @@ class TagParser(object):
                 new_ast.append(node)
                 continue
             elif isinstance(node, lmast.Latex):
-                new_ast.append(lmast.Latex(node.string, self._process_tag(node)))
+                args, kwargs = self._process_tag(node)
+                new_ast.append(lmast.Latex(node.string, args, kwargs))
                 continue
         return new_ast
 
     def _process_tag(self, latex_tag):
         tag_token_stream = self._lex_tag(latex_tag)
-        return self._parse_tag(tag_token_stream)
+        args, kwargs = self._parse_tag(tag_token_stream)
+        return args, kwargs
 
     def _lex_tag(self, latex_tag):
         token_tests = [

@@ -15,6 +15,13 @@ class LatexGen(object):
     DICT_fn = "imgName"
     DICT_alt_txt = "alt"
 
+    prefs_dict = {
+            "imgZoom": 2000,
+            "path": "",
+            "imgName": "",
+            "alt": ""
+            }
+
     TEX_TMP_NAME = "textemp.tex"
 
     def __init__(self, args):
@@ -51,44 +58,46 @@ class LatexGen(object):
             raise IOError("ERROR: Image dir does not exist.")
 
     def _reset_prefs(self):
-        # Image prefs
-        self.PREF_image_zoom = 2000
-        # Filename prefs
-        self.PREF_fn_prefix = ""
-        self.PREF_fn = "" # Use default filename generator.
-        # HTML prefs
-        self.PREF_alt_txt = "" # Use filename as alt txt
+        prefs_dict = {
+                "imgZoom": 2000,
+                "path": "",
+                "imgName": "",
+                "alt": ""
+                }
 
     def canProcess(func_name):
         if func_name == "latex":
             return True
         return False
 
-    def generate(self, latex_string, latex_args_dict):
+    def generate(self, latex_string, args, kwargs):
         # Ignore empty strings
         if not latex_string.strip():
             return ""
         self._reset_prefs()
-        self._process_tag_args(latex_args_dict)
+        self._process_tag_args(args, kwargs)
+        self._validate_args(args, kwargs)
         image_name = self._compile_latex(latex_string)
-        if self.PREF_alt_txt == "":
+        if self.prefs_dict["alt"] == "":
             alt_text = image_name
         else:
-            alt_text = self.PREF_alt_txt
+            alt_text = self.prefs_dict["alt"]
         return "![%s](%s)" % (alt_text, image_name)
 
-    def _process_tag_args(self, args_dict):
-        my_attrs = dir(self)
-        my_dict_attrs = []
-        for attr in my_attrs:
-            if re.match(r"DICT", attr):
-                my_dict_attrs.append(attr)
+    def _process_tag_args(self, args, kwargs):
+        logging.debug(args)
+        self.prefs_dict["path"] = args[0] if len(args) > 0 else ""
+        self.prefs_dict["alt"] = args[1] if len(args) > 1 else ""
+        self.prefs_dict["imgZoom"] = args[2] if len(args) > 2 else "2000"
+        self.prefs_dict["imgName"] = args[3] if len(args) > 3 else ""
+        for key, value in kwargs.items():
+            self.prefs_dict[key] = value
 
-        logging.debug(my_dict_attrs)
-        for attr in my_dict_attrs:
-            if getattr(self,attr) in args_dict:
-                pref_name = "PREF" + attr[4:]
-                setattr(self, pref_name, args_dict[getattr(self,attr)])
+    def _validate_args(self, args, kwargs):
+        if int(self.prefs_dict["imgZoom"]) > 3000:
+            logging.warn("imgZoom is very large: %d", int(self.prefs_dict["imgZoom"]))
+        if int(self.prefs_dict["imgZoom"]) < 1000:
+            logging.warn("imgZoom is very small: %d", int(self.prefs_dict["imgZoom"]))
 
     def _gen_name(self):
         counter = 0
@@ -130,14 +139,14 @@ class LatexGen(object):
             raise CommandException("Error in callto LaTeX: " + str(out))
 
         # Generate file for png and convert dvi to png
-        if self.PREF_fn == "":
+        if self.prefs_dict["imgName"] == "":
             image_name = self._fn_gen.next()
         else:
-            image_name = self.PREF_fn
+            image_name = self.prefs_dict["imgName"]
         dvipng_call = [
                 "dvipng",
                 "-T", "tight",
-                "-x", str(self.PREF_image_zoom),
+                "-x", str(self.prefs_dict["imgZoom"]),
                 "-z", "6",
                 tex_tmp.name[0:-3] + "dvi",
                 "-o", self._image_dir + ("%s" % image_name),
@@ -152,8 +161,8 @@ class LatexGen(object):
         if p.returncode:
             raise CommandException("Error in call to dvipng: " + str(out))
 
-        if self.PREF_fn_prefix != "":
-            image_name = self.PREF_fn_prefix + image_name
+        if self.prefs_dict["path"] != "":
+            image_name = self.prefs_dict["path"] + image_name
 
         return image_name
 

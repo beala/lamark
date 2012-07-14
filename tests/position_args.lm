@@ -1,1 +1,1 @@
-{%latex path="/" "position arg 1" "position arg 2" imgName="1.png" "pos 3"%}a^2{%end%}
+{%latex "http://media.usrsb.in/" "A Squared" imgZoom="0" %}a^2{%end%}
