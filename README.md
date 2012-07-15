@@ -26,6 +26,18 @@ Running this through the LaMark processor will result in:
 
 Along with two images files: `0.png` and `one-half.png`
 
+Using the command line tool is easy. Process a LaMark file named `example.lm` with:
+
+```
+python lamark.py -f example.lm -o markdown.md
+```
+
+Or convert straight to HTML using the [reference implementation of Markdown](http://daringfireball.net/projects/markdown/):
+
+```
+python lamark.py -f example.lm | ./Markdown.pl > example.html
+```
+
 #Usage
 Following Octopress's lead, LaMark tags are wrapped in a bracket and percent sign as follows:
 
@@ -80,19 +92,41 @@ LaMark does its best to be flexible, and allow for whitespace in tags. The follo
             "Some LaTeX"                                                          imgZoom="2500"
             %}a^2
             {%end            %}
-            ```
+```
 
-            In short, most sensible (and some wacky) whitespacing styles are valid.
 
-            #License
 
-            ```
-            Copyright (c) 2012 Alex Beal <alexlbeal@gmail.com>
+In short, most sensible (and some wacky) whitespacing styles are valid.
 
-            Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Using the command line tool is self-explanatory:
 
-            The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+```
+% python lamark.py -h
+usage: lamark.py [-h] -f FILE [-o FILE] [-i DIR] [--debug] [--warn]
 
-            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+A LaTeX processor for Markdown
+
+optional arguments:
+  -h, --help  show this help message and exit
+  -f FILE     LaMark input file. '-' for stdin.
+  -o FILE     Markdown output file. Images will be placed in same directory
+              unless overridden with -i. Defaults to stdout, in which case
+              images will be placed in the pwd.
+  -i DIR      Image directory.
+  --debug     Turn on debug messages.
+  --warn      Turn on warning messages.
+```
+
+
+#License
+
+```
+Copyright (c) 2012 Alex Beal <alexlbeal@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
