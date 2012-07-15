@@ -13,5 +13,4 @@ f(x,\mu ,\sigma^2) = \frac{1}{\sigma \sqrt{2\pi}}e^{-\frac{1}{2}(\frac{x-\mu}{\s
 
 Generated using:
 
-    python matex.py demo.md output.md
-    ./Markdown.pl output.md > demo.html
+    python lamark.py -f demo.md | ./Markdown.pl > demo.html
