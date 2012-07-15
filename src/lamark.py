@@ -14,13 +14,13 @@ def main():
             '-f',
             required=True,
             metavar="FILE",
-            help="Input matex file. '-' for stdin.")
+            help="LaMark input file. '-' for stdin.")
     cli_parser.add_argument(
             "-o",
             metavar="FILE",
             default=None,
-            help=("Output Markdown file. Images will be placed in same " +
-                "dir unless overridden with -i. Defaults to stdout, "+
+            help=("Markdown output file. Images will be placed in same " +
+                "directory unless overridden with -i. Defaults to stdout, "+
                 "in which case images will be placed in the pwd."))
     cli_parser.add_argument(
             "-i",
@@ -36,7 +36,7 @@ def main():
             "--warn",
             action='store_true',
             default=False,
-            help="Turn on debug messages.")
+            help="Turn on warning messages.")
     args = cli_parser.parse_args()
 
     # Set log level
@@ -46,7 +46,9 @@ def main():
         log_lvl = logging.WARNING
     else:
         log_lvl = logging.ERROR
-    logging.basicConfig(level=log_lvl)
+    logging.basicConfig(
+            level=log_lvl,
+            format='%(levelname)s:%(message)s')
     # Get from stdin if file is -
     if args.f == "-":
         input_file = sys.stdin
@@ -54,7 +56,8 @@ def main():
         input_file = open(args.f)
     # Lex
     lexer = lmlexer.LmLexer(args)
-    token_stream = lexer.lex(input_file.read())
+    with input_file as f:
+        token_stream = lexer.lex(f.read())
     logging.debug("Token stream:\n" + str(token_stream))
     # Parse
     parser = lmparser.LmParser(args)
