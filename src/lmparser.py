@@ -11,6 +11,7 @@ class LmParser(object):
     def parse(self, token_stream):
         ast = []
         acc = ""
+        acc_lineno = 0
         last_escaped = False
         current_args = ""
         #for token in token_stream:

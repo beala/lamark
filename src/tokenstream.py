@@ -32,3 +32,6 @@ class TokenStream(object):
             return self._token_stream[self._current_index]
         except IndexError:
             raise StopIteration
+
+    def __repr__(self):
+        return repr(self._token_stream)

@@ -7,7 +7,7 @@ class TagParser(object):
     t_ARG = r"\w+"
     t_FUNC_NAME = r"{%\s*(\w+)"
     t_ASSIGN = r"="
-    t_VALUE = r'"([a-zA-Z0-9_ \./:\\]*)"'
+    t_VALUE = r'"([a-zA-Z0-9_ \./:\\-]*)"'
     t_IGNORE = r"\s*|%\}"
 
     def __init__(self, args):
