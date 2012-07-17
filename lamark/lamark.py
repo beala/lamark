@@ -9,7 +9,7 @@ import logging
 
 def main():
     cli_parser = argparse.ArgumentParser(
-            description="A LaTeX processor for Markdown")
+            description="A tool for embedding LaTeX in Markdown.")
     cli_parser.add_argument(
             '-f',
             required=True,

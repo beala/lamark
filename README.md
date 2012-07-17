@@ -102,6 +102,24 @@ LaMark does its best to be flexible, and allow for whitespace in tags. The follo
 
 In short, most sensible (and some wacky) whitespacing styles are valid.
 
+LaMark tags can be escaped with a backslash. Consider the following LaMark:
+
+```
+\{%latex%}
+a^2
+\{%end%}
+```
+
+This will be rendered as:
+
+```
+{%latex%}
+a^2
+{%end%}
+```
+
+Backslashes are only escape characters if they come before a LaMark tag. In all other cases, they carry no special meaning and will be left alone by the LaMark processor.
+
 Using the command line tool is self-explanatory:
 
 ```
