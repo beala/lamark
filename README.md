@@ -1,7 +1,7 @@
 #Introduction
 LaMark is a tool for embedding LaTeX equations in Markdown files. It is designed as a companion to Markdown blogging platforms such as Octopress and Jekyll.
 
-Here is an example of a LaMark file: https://github.com/beala/lamark/blob/master/tests/demo.lm
+Here is an example of a LaMark file: https://github.com/beala/lamark/blob/master/lamark/test/functional/demo.lm
 
 And the cooresponding HTML: http://media.usrsb.in/lamark-demo/demo.html
 
@@ -28,7 +28,7 @@ Running this through the LaMark processor will result in:
 ![http://media.usrsb.in/one-half.png](http://media.usrsb.in/one-half.png)
 ```
 
-Along with two images files: `0.png` and `one-half.png`
+Along with two image files: `0.png` and `one-half.png`
 
 Using the command line tool is easy. Process a LaMark file named `example.lm` with:
 
