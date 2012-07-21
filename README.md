@@ -139,6 +139,13 @@ optional arguments:
   --warn      Turn on warning messages.
 ```
 
+#Dependencies
+`latex` and `dvipng` are required.
+
+- OS X: Install MacTeX: http://tug.org/mactex/
+- Ubuntu: `sudo apt-get install texlive`
+
+Tested on Python 2.7.2+
 
 #License
 
