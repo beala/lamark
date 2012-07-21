@@ -44,7 +44,8 @@ class LmParser(object):
                     acc = ""
                 current_args = token.raw_match
                 self._expect(
-                        [lexertokens.ESCAPE, lexertokens.OTHER],
+                        [lexertokens.ESCAPE, lexertokens.OTHER,
+                            lexertokens.LEND],
                         token_stream
                         )
                 continue

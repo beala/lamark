@@ -38,6 +38,17 @@ class TestLmParser(unittest.TestCase):
                 "a^2",
                 0)
 
+    def test_latex(self):
+        "Empty LaTeX tag."
+        ast = self._make_ast([
+            lexertokens.LSTART("{%latex%}",0),
+            lexertokens.LEND("{%end%}",0)])
+        self._test_ast_node(
+                ast[0],
+                lmast.Latex,
+                "",
+                0)
+
     def test_latex_no_match(self):
         "One LSTART without LEND. Should throw error."
         with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
