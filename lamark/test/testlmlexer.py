@@ -65,6 +65,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
                 str(lend_tok),
                 "{%end%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_lstart_other_lend(self):
         "LSTART followed by OTHER followed by LEND"
@@ -92,6 +94,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
                 str(lend_tok),
                 "{%end%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_escape(self):
         "Backlash produces ESCAPE tok"
@@ -124,6 +128,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
             str(lstart_tok),
             "{%latex%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_escape_lend(self):
         "ESCAPE followed by LEND"
@@ -144,6 +150,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
                 str(lend_tok),
                 "{%end%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_lend_whitespace_1(self):
         "Whitespace before LSTART"
@@ -157,6 +165,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
             str(lstart_tok),
             "{%   latex%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_lend_whitespace_2(self):
         "Whitespace after LSTART"
@@ -170,6 +180,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
             str(lstart_tok),
             "{%   latex    %}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_lstart_keywork_args(self):
         "Basic keyword arg"
@@ -183,6 +195,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
             str(lstart_tok),
             "{%latex arg=\"value\"%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_lstart_positional_args(self):
         "Basic positional arg"
@@ -196,6 +210,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
             str(lstart_tok),
             "{%latex \"value\"%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_lstart_positional_keyword_args(self):
         "Basic positional AND keyword arg"
@@ -209,6 +225,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
             str(lstart_tok),
             "{%latex \"value\" arg=\"value\"%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_lstart_url_positional_keyword_args(self):
         "Test complex arg value (url with hyphen)"
@@ -222,6 +240,8 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
             str(lstart_tok),
                 "{%latex \"http://example-com.com\" arg=\"http://example-com.com\"%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 
     def test_other_func_name(self):
         "Should accept function names other than 'latex'"
@@ -235,4 +255,6 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
             str(lstart_tok),
             "{%func \"value\" arg=\"value\"%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
 

@@ -35,12 +35,12 @@ class ESCAPE(token):
         return self.raw_match
 
 class OTHER(token):
-    def __init__(self, string, lineno):
-        self.string = string
+    def __init__(self, raw_match, lineno):
+        self.raw_match = raw_match
         self.lineno = lineno
 
     def __repr__(self):
-        return "OTHER(%s, %d)" % (repr(self.string), self.lineno)
+        return "OTHER(%s, %d)" % (repr(self.raw_match), self.lineno)
 
     def __str__(self):
-        return self.string
+        return self.raw_match
