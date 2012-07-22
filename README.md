@@ -33,18 +33,25 @@ Along with two image files: `0.png` and `one-half.png`
 Using the command line tool is easy. Process a LaMark file named `example.lm` with:
 
 ```
-python lamark.py -f example.lm -o markdown.md
+lamark -f example.lm -o markdown.md
 ```
 
 Or convert straight to HTML using the [reference implementation of Markdown](http://daringfireball.net/projects/markdown/):
 
 ```
-python lamark.py -f example.lm | ./Markdown.pl > example.html
+lamark -f example.lm | ./Markdown.pl > example.html
 ```
 
 #Installation
 
 `pip install lamark`
+
+`latex` and `dvipng` are required.
+
+- OS X: Install MacTeX: http://tug.org/mactex/
+- Ubuntu: `sudo apt-get install texlive`
+
+Tested on Python 2.7.2+
 
 #Usage
 Following Octopress's lead, LaMark tags are wrapped in a bracket and percent sign as follows:
@@ -127,7 +134,7 @@ Backslashes are only escape characters if they come before a LaMark tag. In all 
 Using the command line tool is self-explanatory:
 
 ```
-% python lamark.py -h
+% lamark -h
 usage: lamark.py [-h] -f FILE [-o FILE] [-i DIR] [--debug] [--warn]
 
 A LaTeX processor for Markdown
@@ -142,14 +149,6 @@ optional arguments:
   --debug     Turn on debug messages.
   --warn      Turn on warning messages.
 ```
-
-#Dependencies
-`latex` and `dvipng` are required.
-
-- OS X: Install MacTeX: http://tug.org/mactex/
-- Ubuntu: `sudo apt-get install texlive`
-
-Tested on Python 2.7.2+
 
 #License
 
