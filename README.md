@@ -42,6 +42,10 @@ Or convert straight to HTML using the [reference implementation of Markdown](htt
 python lamark.py -f example.lm | ./Markdown.pl > example.html
 ```
 
+#Installation
+
+`pip install lamark`
+
 #Usage
 Following Octopress's lead, LaMark tags are wrapped in a bracket and percent sign as follows:
 
