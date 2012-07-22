@@ -1,0 +1,2 @@
+{% notlatex %} Some not latex stuff
+{% endnotlatex%}

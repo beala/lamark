@@ -1,9 +1,11 @@
 import re
 import lexertokens
 import tokenstream
+import tagplugins
 
 t_ESCAPE = "\\"
-_func_name = r'(?!end)[a-zA-Z0-9_]+'
+#_func_name = r'(?:end)[a-zA-Z0-9_]+'
+_func_name = r'(?:latex)'
 _arg_name = r'[a-zA-Z0-9_]*'
 _arg_value  = r'"[a-zA-Z0-9_ \./:\\-]*"'
 _arg = r'(\s*(' + _arg_name + r'\s*=)?\s*' + _arg_value + r'\s*)'
@@ -22,6 +24,12 @@ class LmLexer(object):
         # characters that don't match any token get put in a catch-all
         # other_acc. We need to know what line this other_acc started on.
         self._acc_newline_count = 1
+        self._init_func_names()
+
+    def _init_func_names(self):
+        func_names = tagplugins.tag_plugins.keys()
+        func_names_regex = r"|".join(func_names)
+        _func_name = r"(?:" +func_names_regex + r")"
 
     def lex(self, string):
         """Lexes the string into a TokenStream of tokens.

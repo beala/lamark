@@ -244,16 +244,16 @@ class testLmLexer(unittest.TestCase):
             tok_iter.next()
 
     def test_other_func_name(self):
-        "Should accept function names other than 'latex'"
+        "Should ignore func names that aren't in tag_plugins"
         tok_stream = self.lexer.lex(
                 "{%func \"value\" arg=\"value\"%}")
         tok_iter = iter(tok_stream)
-        lstart_tok = tok_iter.next()
+        other_tok = tok_iter.next()
         self.assertIsInstance(
-            lstart_tok,
-            lexertokens.LSTART)
+            other_tok,
+            lexertokens.OTHER)
         self.assertEqual(
-            str(lstart_tok),
+            str(other_tok),
             "{%func \"value\" arg=\"value\"%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()

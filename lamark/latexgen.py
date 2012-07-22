@@ -50,6 +50,9 @@ class LatexGen(object):
         return self
 
     def __exit__(self, type, value, traceback):
+        self.tear_down()
+
+    def tear_down(self):
         shutil.rmtree(self._tex_tmp_dir)
 
     def _create_tmp_dir(self):
