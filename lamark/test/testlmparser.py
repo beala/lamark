@@ -1,9 +1,9 @@
 import unittest
-import lmparser
-import tokenstream
-import lexertokens
-import lmast
-import lamarksyntaxerror
+from .. import lmparser
+from .. import tokenstream
+from .. import lexertokens
+from .. import lmast
+from .. import lamarksyntaxerror
 
 class TestLmParser(unittest.TestCase):
     def setUp(self):

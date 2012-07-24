@@ -1,6 +1,6 @@
 import unittest
-import lmlexer
-import lexertokens
+from .. import lmlexer
+from .. import lexertokens
 
 class testLmLexer(unittest.TestCase):
     def setUp(self):
@@ -258,3 +258,58 @@ class testLmLexer(unittest.TestCase):
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
+    def test_newline_other(self):
+        "If OTHER begins on newline, say it starts on next line."
+        tok_stream = self.lexer.lex(
+                "\nMarkdown")
+        tok_iter = iter(tok_stream)
+        other_tok = tok_iter.next()
+        self.assertIsInstance(
+                other_tok,
+                lexertokens.OTHER)
+        self.assertEqual(
+                str(other_tok),
+                "\nMarkdown")
+        self.assertEqual(
+                other_tok.lineno,
+                2)
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
+
+    def test_latex_newline_other(self):
+        "If OTHER begins on newline, say it starts on next line."
+        tok_stream = self.lexer.lex(
+                "{%latex%}{%end%}\nMarkdown")
+        tok_iter = iter(tok_stream)
+        tok_iter.next()
+        tok_iter.next()
+        other_tok = tok_iter.next()
+        self.assertIsInstance(
+                other_tok,
+                lexertokens.OTHER)
+        self.assertEqual(
+                str(other_tok),
+                "\nMarkdown")
+        self.assertEqual(
+                other_tok.lineno,
+                2)
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
+
+    def test_latex_newline_other(self):
+        "OTHER's lineno should be on last preceding newline."
+        tok_stream = self.lexer.lex(
+                "\n\n\nMarkdown")
+        tok_iter = iter(tok_stream)
+        other_tok = tok_iter.next()
+        self.assertIsInstance(
+                other_tok,
+                lexertokens.OTHER)
+        self.assertEqual(
+                str(other_tok),
+                "\n\n\nMarkdown")
+        self.assertEqual(
+                other_tok.lineno,
+                4)
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
