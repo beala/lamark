@@ -1,1 +1,2 @@
-Go to the homepage for further documentation.
+See README.md for futher documentation, or the homepage at:
+https://github.com/beala/lamark
