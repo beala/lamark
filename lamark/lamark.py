@@ -7,7 +7,7 @@ import tagparser
 import mdcodegen
 import logging
 
-VERSION="0.1.3"
+VERSION="0.1.4"
 
 def main():
     cli_parser = argparse.ArgumentParser(
