@@ -7,14 +7,16 @@ import tagparser
 import mdcodegen
 import logging
 
+VERSION="0.1.3"
+
 def main():
     cli_parser = argparse.ArgumentParser(
             description="A tool for embedding LaTeX in Markdown.")
     cli_parser.add_argument(
             '-f',
-            required=True,
             metavar="FILE",
-            help="LaMark input file. '-' for stdin.")
+            default=None,
+            help="LaMark input file. Default is stdin.")
     cli_parser.add_argument(
             "-o",
             metavar="FILE",
@@ -37,6 +39,11 @@ def main():
             action='store_true',
             default=False,
             help="Turn on warning messages.")
+    cli_parser.add_argument(
+            "--version",
+            action='store_true',
+            default=False,
+            help="Display version.")
     args = cli_parser.parse_args()
 
     # Set log level
@@ -49,8 +56,12 @@ def main():
     logging.basicConfig(
             level=log_lvl,
             format='%(levelname)s:%(message)s')
+    if args.version:
+        print "Version: %s" % VERSION
+        return
+
     # Get from stdin if file is -
-    if args.f == "-":
+    if args.f == None or args.f == "-":
         input_file = sys.stdin
     else:
         input_file = open(args.f)
