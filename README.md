@@ -1,7 +1,7 @@
 #Introduction
 LaMark is a tool for embedding LaTeX equations in Markdown files. It is designed as a companion to Markdown blogging platforms such as Octopress and Jekyll.
 
-Here is an example of a LaMark file: https://github.com/beala/lamark/blob/master/lamark/test/functional/demo.lm
+Here is an example of a LaMark file: https://github.com/beala/lamark/blob/master/lamark/test/functional/demo1.lm
 
 And the cooresponding HTML: http://media.usrsb.in/lamark-demo/demo.html
 
