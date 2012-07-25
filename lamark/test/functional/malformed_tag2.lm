@@ -1,0 +1,4 @@
+
+{%latex imgName="name%}
+a^2
+{%end%}

@@ -9,7 +9,8 @@ _func_name = r'(?:latex)'
 _arg_name = r'[a-zA-Z0-9_]*'
 _arg_value  = r'"[a-zA-Z0-9_ \./:\\-]*"'
 _arg = r'(\s*(' + _arg_name + r'\s*=)?\s*' + _arg_value + r'\s*)'
-t_LSTART = r'{%\s*' + _func_name + r'\s*' + _arg + r'*\s*%}'
+#t_LSTART = r'{%\s*' + _func_name + r'\s*' + _arg + r'*\s*%}'
+t_LSTART = r'{%\s*latex\s*[a-zA-Z0-9_./:\-"\s=%]*%}'
 t_LEND = r"{%\s*end\s*%}"
 t_NEWLINE = r'\n'
 

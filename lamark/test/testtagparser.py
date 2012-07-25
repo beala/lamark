@@ -109,3 +109,73 @@ class TestTagParser(unittest.TestCase):
          ast = self.parser.parse([lt_tag])
          self.assertEqual(ast[0].args, ["http://example.com"])
          self.assertEqual(ast[0].kwargs, {'func_name':'latex'})
+
+    def test_unexpected_assign(self):
+        "Start with assign token should throw syntax error"
+        lt_tag = lmast.Latex(
+                "",
+                0,
+                '{% =%}'
+                )
+        with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
+           ast = self.parser.parse([lt_tag])
+
+    def test_malformed_tag1(self):
+        "Invalid char '&'"
+        lt_tag = lmast.Latex(
+                "",
+                0,
+                '{% &&&& %}'
+                )
+        with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
+           ast = self.parser.parse([lt_tag])
+
+    def test_malformed_tag2(self):
+        "Missing quote"
+        lt_tag = lmast.Latex(
+                "",
+                0,
+                '{% latex imgName="bad name %}'
+                )
+        with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
+           ast = self.parser.parse([lt_tag])
+
+    def test_malformed_tag3(self):
+        "Missing quote"
+        lt_tag = lmast.Latex(
+                "",
+                0,
+                '{% latex "bad name %}'
+                )
+        with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
+           ast = self.parser.parse([lt_tag])
+
+    def test_malformed_tag4(self):
+        "Missing quote"
+        lt_tag = lmast.Latex(
+                "",
+                0,
+                '{% latex bad name" %}'
+                )
+        with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
+           ast = self.parser.parse([lt_tag])
+
+    def test_malformed_tag5(self):
+        "Missing quote"
+        lt_tag = lmast.Latex(
+                "",
+                0,
+                '{% latex bad name%}'
+                )
+        with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
+           ast = self.parser.parse([lt_tag])
+
+    def test_malformed_tag6(self):
+        "Missing quote"
+        lt_tag = lmast.Latex(
+                "",
+                0,
+                '{% latex imgName=bad name%}'
+                )
+        with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
+           ast = self.parser.parse([lt_tag])

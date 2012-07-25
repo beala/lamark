@@ -38,7 +38,8 @@ class LmParser(object):
             if isinstance(token, lexertokens.LSTART):
                 # Beginning of Latex section. Last section must have been
                 # markdown. Add md node to AST, if there's something in acc.
-                tag_counter = self._count_tag(token_stream, tag_counter)
+                tag_counter = self._count_tag_check(token_stream, tag_counter)
+                self.last_lstart_lineno=token.lineno
                 if acc:
                     ast.append(lmast.Markdown(acc, token.lineno))
                     acc = ""
@@ -52,8 +53,11 @@ class LmParser(object):
 
             if isinstance(token, lexertokens.LEND):
                 # End of Latex section. Add Latex node to AST
-                tag_counter = self._count_tag(token_stream, tag_counter)
-                ast.append(lmast.Latex(acc, token.lineno, current_args))
+                tag_counter = self._count_tag_check(token_stream, tag_counter)
+                ast.append(lmast.Latex(
+                    acc,
+                    self.last_lstart_lineno,
+                    current_args))
                 acc = ""
                 current_args = ""
                 self._expect(
@@ -105,7 +109,7 @@ class LmParser(object):
         except StopIteration:
             pass
 
-    def _count_tag(self, token_stream, tag_counter):
+    def _count_tag_check(self, token_stream, tag_counter):
         """Count the number of start and end tags. Throw an error if
         LaMark tags are nested.
         """
