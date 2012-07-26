@@ -135,19 +135,20 @@ Using the command line tool is self-explanatory:
 
 ```
 % lamark -h
-usage: lamark.py [-h] -f FILE [-o FILE] [-i DIR] [--debug] [--warn]
+usage: lamark [-h] [-f FILE] [-o FILE] [-i DIR] [--debug] [--warn] [--version]
 
-A LaTeX processor for Markdown
+A tool for embedding LaTeX in Markdown.
 
 optional arguments:
   -h, --help  show this help message and exit
-  -f FILE     LaMark input file. '-' for stdin.
+  -f FILE     LaMark input file. Default is stdin.
   -o FILE     Markdown output file. Images will be placed in same directory
               unless overridden with -i. Defaults to stdout, in which case
               images will be placed in the pwd.
   -i DIR      Image directory.
   --debug     Turn on debug messages.
   --warn      Turn on warning messages.
+  --version   Display version.
 ```
 
 #License
