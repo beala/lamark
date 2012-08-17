@@ -35,8 +35,19 @@ class testLmLexer(unittest.TestCase):
                 str(lstart_tok),
                 "{%latex%}")
 
+    def test_lstart_ref_tok(self):
+        "Test one LSTART ref Tag"
+        tok_stream = self.lexer.lex("{%ref%}")
+        lstart_tok = iter(tok_stream).next()
+        self.assertIsInstance(
+                lstart_tok,
+                lexertokens.LSTART)
+        self.assertEqual(
+                str(lstart_tok),
+                "{%ref%}")
+
     def test_lend_tok(self):
-        "Test one LSTART Tag"
+        "Test one LEND Tag"
         tok_stream = self.lexer.lex("{%end%}")
         lend_tok = iter(tok_stream).next()
         self.assertIsInstance(
@@ -68,6 +79,28 @@ class testLmLexer(unittest.TestCase):
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
+    def test_lstart_ref_lend(self):
+        "RSTART Followed by REND"
+        tok_stream = self.lexer.lex(
+                "{%ref%}{%end%}")
+        tok_iter = iter(tok_stream)
+        lstart_tok = tok_iter.next()
+        self.assertIsInstance(
+                lstart_tok,
+                lexertokens.LSTART)
+        self.assertEqual(
+                str(lstart_tok),
+                "{%ref%}")
+        lend_tok = tok_iter.next()
+        self.assertIsInstance(
+                lend_tok,
+                lexertokens.LEND)
+        self.assertEqual(
+                str(lend_tok),
+                "{%end%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
+
     def test_lstart_other_lend(self):
         "LSTART followed by OTHER followed by LEND"
         tok_stream = self.lexer.lex(
@@ -80,6 +113,35 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
                 str(lstart_tok),
                 "{%latex%}")
+        other_tok = tok_iter.next()
+        self.assertIsInstance(
+                other_tok,
+                lexertokens.OTHER)
+        self.assertEqual(
+                str(other_tok),
+                "other")
+        lend_tok = tok_iter.next()
+        self.assertIsInstance(
+                lend_tok,
+                lexertokens.LEND)
+        self.assertEqual(
+                str(lend_tok),
+                "{%end%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
+
+    def test_rstart_other_rend(self):
+        "LSTART followed by OTHER followed by LEND"
+        tok_stream = self.lexer.lex(
+                "{%ref%}other{%end%}")
+        tok_iter = iter(tok_stream)
+        lstart_tok = tok_iter.next()
+        self.assertIsInstance(
+                lstart_tok,
+                lexertokens.LSTART)
+        self.assertEqual(
+                str(lstart_tok),
+                "{%ref%}")
         other_tok = tok_iter.next()
         self.assertIsInstance(
                 other_tok,
@@ -128,6 +190,28 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
             str(lstart_tok),
             "{%latex%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
+
+    def test_escape_rstart(self):
+        "ESCAPE followed by LSTART"
+        tok_stream = self.lexer.lex(
+                "\\{%ref%}")
+        tok_iter = iter(tok_stream)
+        escape_tok = tok_iter.next()
+        self.assertIsInstance(
+                escape_tok,
+                lexertokens.ESCAPE)
+        self.assertEqual(
+                str(escape_tok),
+                "\\")
+        lstart_tok = tok_iter.next()
+        self.assertIsInstance(
+            lstart_tok,
+            lexertokens.LSTART)
+        self.assertEqual(
+            str(lstart_tok),
+            "{%ref%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
 

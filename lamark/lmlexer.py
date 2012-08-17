@@ -10,8 +10,9 @@ _arg_name = r'[a-zA-Z0-9_]*'
 _arg_value  = r'"[a-zA-Z0-9_ \./:\\-]*"'
 _arg = r'(\s*(' + _arg_name + r'\s*=)?\s*' + _arg_value + r'\s*)'
 #t_LSTART = r'{%\s*' + _func_name + r'\s*' + _arg + r'*\s*%}'
-t_LSTART = r'{%\s*latex\s*[a-zA-Z0-9_./:\-"\s=%]*%}'
+t_LSTART = r'{%\s*(?:latex|ref)\s*[a-zA-Z0-9_./:\-"\s=%]*%}'
 t_LEND = r"{%\s*end\s*%}"
+t_UNI_TAG = r'{%\s*reffooter\s*%}'
 t_NEWLINE = r'\n'
 
 class LmLexer(object):
@@ -25,12 +26,12 @@ class LmLexer(object):
         # characters that don't match any token get put in a catch-all
         # other_acc. We need to know what line this other_acc started on.
         self._acc_newline_count = 1
-        self._init_func_names()
+        #self._init_func_names()
 
-    def _init_func_names(self):
-        func_names = tagplugins.tag_plugins.keys()
-        func_names_regex = r"|".join(func_names)
-        _func_name = r"(?:" +func_names_regex + r")"
+    #def _init_func_names(self):
+        #func_names = tagplugins.tag_plugins.keys()
+        #func_names_regex = r"|".join(func_names)
+        #_func_name = r"(?:" +func_names_regex + r")"
 
     def lex(self, string):
         """Lexes the string into a TokenStream of tokens.
@@ -47,6 +48,7 @@ class LmLexer(object):
                 self._test_escape,
                 self._test_lstart,
                 self._test_lend,
+                self._test_uni_tag,
                 ]
         for i in xrange(len(string)):
             # Fast forward `i` to `ff`
@@ -109,6 +111,16 @@ class LmLexer(object):
         if matchObj:
             n += len(matchObj.group(0))
             new_tok = lexertokens.LEND(matchObj.group(0), self._newline_count)
+            self._newline_count += self._count_newlines(matchObj.group(0))
+            return (n, new_tok)
+        else:
+            return (n, None)
+
+    def _test_uni_tag(self, string, n):
+        matchObj = re.match(t_UNI_TAG, string[n:])
+        if matchObj:
+            n += len(matchObj.group(0))
+            new_tok = lexertokens.UNI_TAG(matchObj.group(0), self._newline_count)
             self._newline_count += self._count_newlines(matchObj.group(0))
             return (n, new_tok)
         else:

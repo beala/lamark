@@ -22,7 +22,8 @@ class LmParser(object):
                 last_escaped = False
                 if (
                         isinstance(token, lexertokens.LSTART) or
-                        isinstance(token, lexertokens.LEND)):
+                        isinstance(token, lexertokens.LEND) or
+                        isinstance(token, lexertokens.UNI_TAG)):
                     # If you've escaped a start/end latex tag, then only
                     # keep the tag.
                     acc += str(token)
