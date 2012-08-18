@@ -1,6 +1,7 @@
 import lmast
 import latexgen
 import tagplugins
+import logging
 
 class MdCodeGen(object):
     """ Last stage. Generate Markdown from the AST
@@ -16,8 +17,19 @@ class MdCodeGen(object):
         for node in lamark_ast:
             if isinstance(node, lmast.Markdown):
                 pure_md_acc += str(node)
-            elif isinstance(node, lmast.Latex):
-                code_gen = self.plugins_dict[node.kwargs["func_name"]].generate
+            elif (
+                    isinstance(node, lmast.BinTag) or
+                    isinstance(node, lmast.UnaryTag)):
+                code_gen = None
+                func_name = node.kwargs["func_name"]
+                for key in self.plugins_dict:
+                    if func_name in key:
+                        code_gen = self.plugins_dict[key].generate
+                if code_gen == None:
+                    logging.warning(
+                            "Unrecognized tag: " + func_name + ". Skipping.")
+                    continue
+                #code_gen = self.plugins_dict[node.kwargs["func_name"]].generate
                 pure_md_acc += str(code_gen(
                     str(node),
                     node.lineno,

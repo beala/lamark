@@ -19,9 +19,9 @@ class TagParser(object):
             if isinstance(node, lmast.Markdown):
                 new_ast.append(node)
                 continue
-            elif isinstance(node, lmast.Latex):
+            elif isinstance(node, lmast.BinTag):
                 args, kwargs = self._process_tag(node)
-                new_ast.append(lmast.Latex(node.string, node.lineno, args, kwargs))
+                new_ast.append(lmast.BinTag(node.string, node.lineno, args, kwargs))
                 continue
         return new_ast
 

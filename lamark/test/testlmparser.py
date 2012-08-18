@@ -34,7 +34,7 @@ class TestLmParser(unittest.TestCase):
             lexertokens.BIN_END("{%end%}",0)])
         self._test_ast_node(
                 ast[0],
-                lmast.Latex,
+                lmast.BinTag,
                 "a^2",
                 0)
 
@@ -45,7 +45,7 @@ class TestLmParser(unittest.TestCase):
             lexertokens.BIN_END("{%end%}",0)])
         self._test_ast_node(
                 ast[0],
-                lmast.Latex,
+                lmast.BinTag,
                 "",
                 0)
 
@@ -113,7 +113,7 @@ class TestLmParser(unittest.TestCase):
             lexertokens.BIN_END("{%end%}",0)])
         self._test_ast_node(
                 ast[0],
-                lmast.Latex,
+                lmast.BinTag,
                 "{%latex%}",
                 0)
 
@@ -126,7 +126,7 @@ class TestLmParser(unittest.TestCase):
             lexertokens.BIN_END("{%end%}",0)])
         self._test_ast_node(
                 ast[0],
-                lmast.Latex,
+                lmast.BinTag,
                 "{%end%}",
                 0)
 

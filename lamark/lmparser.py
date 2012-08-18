@@ -55,16 +55,34 @@ class LmParser(object):
             if isinstance(token, lexertokens.BIN_END):
                 # End of binary tag section. Add binary node to AST
                 tag_counter = self._count_tag_check(token_stream, tag_counter)
-                ast.append(lmast.Latex(
+                ast.append(lmast.BinTag(
                     acc,
                     self.last_bin_start_lineno,
                     current_args))
                 acc = ""
                 current_args = ""
                 self._expect(
-                        [lexertokens.ESCAPE, lexertokens.OTHER],
+                        [
+                            lexertokens.ESCAPE,
+                            lexertokens.OTHER,
+                            lexertokens.UNARY_TAG
+                        ],
                         token_stream
-                        )
+                )
+                continue
+
+            if isinstance(token, lexertokens.UNARY_TAG):
+                # End of binary tag section. Add binary node to AST
+                tag_counter = self._count_tag_check(token_stream, tag_counter)
+                ast.append(lmast.UnaryTag(token.lineno, token.raw_match))
+                self._expect(
+                        [
+                            lexertokens.ESCAPE,
+                            lexertokens.OTHER,
+                            lexertokens.BIN_START
+                        ],
+                        token_stream
+                )
                 continue
 
             if isinstance(token, lexertokens.OTHER):
@@ -73,11 +91,13 @@ class LmParser(object):
                 # Save lineno for when it get flushed
                 acc_lineno = token.lineno
                 self._expect(
-                        [lexertokens.ESCAPE,
-                            lexertokens.BIN_END,
-                            lexertokens.BIN_START],
+                        [
+                            lexertokens.ESCAPE,
+                            lexertokens.BIN_START,
+                            lexertokens.BIN_END
+                        ],
                         token_stream
-                        )
+                )
                 continue
 
         if acc:

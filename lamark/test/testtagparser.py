@@ -21,7 +21,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_latex_no_args(self):
          "LaTeX tag with no args"
-         lt_tag = lmast.Latex(
+         lt_tag = lmast.BinTag(
                  "",
                  0,
                  "{%latex%}"
@@ -32,7 +32,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_latex_one_positional_arg(self):
          "LaTeX tag with one positional args"
-         lt_tag = lmast.Latex(
+         lt_tag = lmast.BinTag(
                  "",
                  0,
                  '{%latex "/img"%}'
@@ -43,7 +43,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_latex_two_positional_arg(self):
          "LaTeX tag with 2 positional args"
-         lt_tag = lmast.Latex(
+         lt_tag = lmast.BinTag(
                  "",
                  0,
                  '{%latex "/img" "alt"%}'
@@ -54,7 +54,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_latex_three_positional_arg(self):
          "LaTeX tag with 3 positional args"
-         lt_tag = lmast.Latex(
+         lt_tag = lmast.BinTag(
                  "",
                  0,
                  '{%latex "/img" "alt" "1000"%}'
@@ -65,7 +65,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_latex_four_positional_arg(self):
          "LaTeX tag with 4 positional args"
-         lt_tag = lmast.Latex(
+         lt_tag = lmast.BinTag(
                  "",
                  0,
                  '{%latex "/img" "alt" "1000" "name"%}'
@@ -76,7 +76,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_latex_one_kwarg(self):
          "LaTeX tag with one kwarg"
-         lt_tag = lmast.Latex(
+         lt_tag = lmast.BinTag(
                  "",
                  0,
                  '{%latex imgName="name"%}'
@@ -88,7 +88,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_latex_two_kwargs(self):
          "LaTeX tag with two kwarg"
-         lt_tag = lmast.Latex(
+         lt_tag = lmast.BinTag(
                  "",
                  0,
                  '{%latex imgName="name" alt="alt"%}'
@@ -101,7 +101,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_latex_url_tag(self):
          "LaTeX tag with two kwarg"
-         lt_tag = lmast.Latex(
+         lt_tag = lmast.BinTag(
                  "",
                  0,
                  '{%latex "http://example.com"%}'
@@ -112,7 +112,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_unexpected_assign(self):
         "Start with assign token should throw syntax error"
-        lt_tag = lmast.Latex(
+        lt_tag = lmast.BinTag(
                 "",
                 0,
                 '{% =%}'
@@ -122,7 +122,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_malformed_tag1(self):
         "Invalid char '&'"
-        lt_tag = lmast.Latex(
+        lt_tag = lmast.BinTag(
                 "",
                 0,
                 '{% &&&& %}'
@@ -132,7 +132,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_malformed_tag2(self):
         "Missing quote"
-        lt_tag = lmast.Latex(
+        lt_tag = lmast.BinTag(
                 "",
                 0,
                 '{% latex imgName="bad name %}'
@@ -142,7 +142,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_malformed_tag3(self):
         "Missing quote"
-        lt_tag = lmast.Latex(
+        lt_tag = lmast.BinTag(
                 "",
                 0,
                 '{% latex "bad name %}'
@@ -152,7 +152,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_malformed_tag4(self):
         "Missing quote"
-        lt_tag = lmast.Latex(
+        lt_tag = lmast.BinTag(
                 "",
                 0,
                 '{% latex bad name" %}'
@@ -162,7 +162,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_malformed_tag5(self):
         "Missing quote"
-        lt_tag = lmast.Latex(
+        lt_tag = lmast.BinTag(
                 "",
                 0,
                 '{% latex bad name%}'
@@ -172,7 +172,7 @@ class TestTagParser(unittest.TestCase):
 
     def test_malformed_tag6(self):
         "Missing quote"
-        lt_tag = lmast.Latex(
+        lt_tag = lmast.BinTag(
                 "",
                 0,
                 '{% latex imgName=bad name%}'
