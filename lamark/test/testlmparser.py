@@ -29,9 +29,9 @@ class TestLmParser(unittest.TestCase):
     def test_latex(self):
         "One LaTeX node"
         ast = self._make_ast([
-            lexertokens.LSTART("{%latex%}",0),
+            lexertokens.BIN_START("{%latex%}",0),
             lexertokens.OTHER("a^2", 0),
-            lexertokens.LEND("{%end%}",0)])
+            lexertokens.BIN_END("{%end%}",0)])
         self._test_ast_node(
                 ast[0],
                 lmast.Latex,
@@ -41,8 +41,8 @@ class TestLmParser(unittest.TestCase):
     def test_latex(self):
         "Empty LaTeX tag."
         ast = self._make_ast([
-            lexertokens.LSTART("{%latex%}",0),
-            lexertokens.LEND("{%end%}",0)])
+            lexertokens.BIN_START("{%latex%}",0),
+            lexertokens.BIN_END("{%end%}",0)])
         self._test_ast_node(
                 ast[0],
                 lmast.Latex,
@@ -50,80 +50,80 @@ class TestLmParser(unittest.TestCase):
                 0)
 
     def test_latex_no_match(self):
-        "One LSTART without LEND. Should throw error."
+        "One BIN_START without BIN_END. Should throw error."
         with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
             ast = self._make_ast([
-                lexertokens.LSTART("{%latex%}",0),
+                lexertokens.BIN_START("{%latex%}",0),
                 lexertokens.OTHER("a^2", 0)])
 
-    def test_latex_invalid_nesting_lstart(self):
-        "Nested LSTARTS should throw syntax error."
+    def test_latex_invalid_nesting_bin_start(self):
+        "Nested BIN_STARTS should throw syntax error."
         with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
             ast = self._make_ast([
-                lexertokens.LSTART("{%latex%}",0),
-                lexertokens.LSTART("{%latex%}",0)])
+                lexertokens.BIN_START("{%latex%}",0),
+                lexertokens.BIN_START("{%latex%}",0)])
 
-    def test_latex_invalid_consecutive_lend(self):
-        "Consecutive LEND tags should raise syntax error."
+    def test_latex_invalid_consecutive_bin_end(self):
+        "Consecutive BIN_END tags should raise syntax error."
         with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
             ast = self._make_ast([
-                lexertokens.LSTART("{%latex%}",0),
-                lexertokens.LEND("{%end%}",0),
-                lexertokens.LEND("{%end%}",0)])
+                lexertokens.BIN_START("{%latex%}",0),
+                lexertokens.BIN_END("{%end%}",0),
+                lexertokens.BIN_END("{%end%}",0)])
 
-    def test_latex_invalid_consecutive_lend_after_other(self):
-        """Consecutive LEND tags should raise syntax error, even if separated
+    def test_latex_invalid_consecutive_bin_end_after_other(self):
+        """Consecutive BIN_END tags should raise syntax error, even if separated
         by OTHER tag.
         """
         with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
             ast = self._make_ast([
-                lexertokens.LSTART("{%latex%}",0),
-                lexertokens.LEND("{%end%}",0),
+                lexertokens.BIN_START("{%latex%}",0),
+                lexertokens.BIN_END("{%end%}",0),
                 lexertokens.OTHER("some latex", 0),
-                lexertokens.LEND("{%end%}",0)])
+                lexertokens.BIN_END("{%end%}",0)])
 
-    def test_escaped_lstart(self):
-        "Escaped LSTART shouldn't start LaTeX section."
+    def test_escaped_bin_start(self):
+        "Escaped BIN_START shouldn't start LaTeX section."
         ast = self._make_ast([
             lexertokens.ESCAPE("\\",0),
-            lexertokens.LSTART("{%latex%}",0)])
+            lexertokens.BIN_START("{%latex%}",0)])
         self._test_ast_node(
                 ast[0],
                 lmast.Markdown,
                 "{%latex%}",
                 0)
 
-    def test_escaped_lend(self):
-        "Escaped LEND shouldn't end LaTeX section."
+    def test_escaped_bin_end(self):
+        "Escaped BIN_END shouldn't end LaTeX section."
         ast = self._make_ast([
             lexertokens.ESCAPE("\\",0),
-            lexertokens.LEND("{%end%}",0)])
+            lexertokens.BIN_END("{%end%}",0)])
         self._test_ast_node(
                 ast[0],
                 lmast.Markdown,
                 "{%end%}",
                 0)
 
-    def test_escaped_lstart_in_latex_section(self):
-        "Escaped LSTART in LaTeX section should be ignored."
+    def test_escaped_bin_start_in_latex_section(self):
+        "Escaped BIN_START in LaTeX section should be ignored."
         ast = self._make_ast([
-            lexertokens.LSTART("{%latex%}",0),
+            lexertokens.BIN_START("{%latex%}",0),
             lexertokens.ESCAPE("\\",0),
-            lexertokens.LSTART("{%latex%}",0),
-            lexertokens.LEND("{%end%}",0)])
+            lexertokens.BIN_START("{%latex%}",0),
+            lexertokens.BIN_END("{%end%}",0)])
         self._test_ast_node(
                 ast[0],
                 lmast.Latex,
                 "{%latex%}",
                 0)
 
-    def test_escaped_lend_section_in_latex(self):
-        "Escaped LEND in LaTeX section should be ignored."
+    def test_escaped_bin_end_section_in_latex(self):
+        "Escaped BIN_END in LaTeX section should be ignored."
         ast = self._make_ast([
-            lexertokens.LSTART("{%latex%}",0),
+            lexertokens.BIN_START("{%latex%}",0),
             lexertokens.ESCAPE("\\",0),
-            lexertokens.LEND("{%end%}",0),
-            lexertokens.LEND("{%end%}",0)])
+            lexertokens.BIN_END("{%end%}",0),
+            lexertokens.BIN_END("{%end%}",0)])
         self._test_ast_node(
                 ast[0],
                 lmast.Latex,

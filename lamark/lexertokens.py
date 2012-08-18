@@ -1,35 +1,35 @@
 class token(object):
     pass
 
-class LSTART(token):
+class BIN_START(token):
     def __init__(self, raw_match, lineno):
         self.raw_match = raw_match
         self.lineno = lineno
 
     def __repr__(self):
-        return "LSTART(%s, %d)" % (self.raw_match, self.lineno)
+        return "BIN_START(%s, %d)" % (self.raw_match, self.lineno)
 
     def __str__(self):
         return self.raw_match
 
-class LEND(token):
+class BIN_END(token):
     def __init__(self, raw_match, lineno):
         self.raw_match = raw_match
         self.lineno = lineno
 
     def __repr__(self):
-        return "LEND(%s, %d)" % (self.raw_match, self.lineno)
+        return "BIN_END(%s, %d)" % (self.raw_match, self.lineno)
 
     def __str__(self):
         return self.raw_match
 
-class UNI_TAG(token):
+class UNARY_TAG(token):
     def __init__(self, raw_match, lineno):
         self.raw_match = raw_match
         self.lineno = lineno
 
     def __repr__(self):
-        return "UNI_TAG(%s, %d)" % (self.raw_match, self.lineno)
+        return "UNARY_TAG(%s, %d)" % (self.raw_match, self.lineno)
 
     def __str__(self):
         return self.raw_match

@@ -12,17 +12,6 @@ class MdCodeGen(object):
 
     def generate(self, lamark_ast):
         pure_md_acc = ""
-        #with latexgen.LatexGen(self.args) as lg:
-            #for node in matex_ast:
-                #if isinstance(node, lmast.Markdown):
-                    #pure_md_acc += str(node)
-                #elif isinstance(node, lmast.Latex):
-                    #pure_md_acc += str(lg.generate(
-                        #str(node),
-                        #node.lineno,
-                        #node.args,
-                        #node.kwargs)
-                        #)
         self._init_plugins()
         for node in lamark_ast:
             if isinstance(node, lmast.Markdown):
@@ -41,9 +30,9 @@ class MdCodeGen(object):
     def _init_plugins(self):
         """Create the plugin objects, and add them to the plugin dict
         """
-        for func_name, plugin_obj in tagplugins.tag_plugins.items():
-            self.plugins_dict[func_name] = plugin_obj(self.args)
+        for func_name, plugin_class in tagplugins.tag_plugins.items():
+            self.plugins_dict[func_name] = plugin_class(self.args)
 
     def _tear_down_plugins(self):
         for func_name, plugin_obj in self.plugins_dict.items():
-            plugin_obj.tear_down
+            plugin_obj.tear_down()

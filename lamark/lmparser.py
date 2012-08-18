@@ -21,9 +21,9 @@ class LmParser(object):
                 # If last token was an escape
                 last_escaped = False
                 if (
-                        isinstance(token, lexertokens.LSTART) or
-                        isinstance(token, lexertokens.LEND) or
-                        isinstance(token, lexertokens.UNI_TAG)):
+                        isinstance(token, lexertokens.BIN_START) or
+                        isinstance(token, lexertokens.BIN_END) or
+                        isinstance(token, lexertokens.UNARY_TAG)):
                     # If you've escaped a start/end latex tag, then only
                     # keep the tag.
                     acc += str(token)
@@ -36,28 +36,28 @@ class LmParser(object):
                 last_escaped = True
                 continue
 
-            if isinstance(token, lexertokens.LSTART):
-                # Beginning of Latex section. Last section must have been
+            if isinstance(token, lexertokens.BIN_START):
+                # Beginning of binary section. Last section must have been
                 # markdown. Add md node to AST, if there's something in acc.
                 tag_counter = self._count_tag_check(token_stream, tag_counter)
-                self.last_lstart_lineno=token.lineno
+                self.last_bin_start_lineno=token.lineno
                 if acc:
                     ast.append(lmast.Markdown(acc, token.lineno))
                     acc = ""
                 current_args = token.raw_match
                 self._expect(
                         [lexertokens.ESCAPE, lexertokens.OTHER,
-                            lexertokens.LEND],
+                            lexertokens.BIN_END],
                         token_stream
                         )
                 continue
 
-            if isinstance(token, lexertokens.LEND):
-                # End of Latex section. Add Latex node to AST
+            if isinstance(token, lexertokens.BIN_END):
+                # End of binary tag section. Add binary node to AST
                 tag_counter = self._count_tag_check(token_stream, tag_counter)
                 ast.append(lmast.Latex(
                     acc,
-                    self.last_lstart_lineno,
+                    self.last_bin_start_lineno,
                     current_args))
                 acc = ""
                 current_args = ""
@@ -74,8 +74,8 @@ class LmParser(object):
                 acc_lineno = token.lineno
                 self._expect(
                         [lexertokens.ESCAPE,
-                            lexertokens.LEND,
-                            lexertokens.LSTART],
+                            lexertokens.BIN_END,
+                            lexertokens.BIN_START],
                         token_stream
                         )
                 continue
@@ -91,9 +91,9 @@ class LmParser(object):
                 ast.append(lmast.Markdown(acc, acc_lineno))
 
         if tag_counter != 0:
-            # Check to make sure every LSTART has an LEND
+            # Check to make sure every BIN_START has an BIN_END
             raise lamarksyntaxerror.LaMarkSyntaxError(
-                    "Unexpected end of file. Missing LaMark end tag.")
+                    "Unexpected end of file. Missing end tag.")
 
         return ast
 
@@ -112,19 +112,24 @@ class LmParser(object):
 
     def _count_tag_check(self, token_stream, tag_counter):
         """Count the number of start and end tags. Throw an error if
-        LaMark tags are nested.
+        binary tags are nested.
         """
-        if isinstance(token_stream.current(), lexertokens.LSTART):
+        if isinstance(token_stream.current(), lexertokens.BIN_START):
             if tag_counter > 0:
                 raise lamarksyntaxerror.LaMarkSyntaxError(
-                        "Unexpected LaMark start tag.",
+                        "Unexpected start tag.",
                         token_stream.current().lineno)
             tag_counter += 1
-        elif isinstance(token_stream.current(), lexertokens.LEND):
+        elif isinstance(token_stream.current(), lexertokens.BIN_END):
             if tag_counter < 1:
                 raise lamarksyntaxerror.LaMarkSyntaxError(
-                        "Unexpected LaMark end tag.",
+                        "Unexpected end tag.",
                         token_stream.current().lineno)
             tag_counter -= 1
+        elif isinstance(token_stream.current(), lexertokens.UNARY_TAG):
+            if tag_counter != 0:
+                raise lamarksyntaxerror.LaMarkSyntaxError(
+                        "Unexpected unary tag.",
+                        token_stream().lineno)
         return tag_counter
 
