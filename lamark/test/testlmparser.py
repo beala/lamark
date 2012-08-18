@@ -143,13 +143,13 @@ class TestLmParser(unittest.TestCase):
                 "Some Markdown\Some more Markdown",
                 0)
 
-    def test_consecutive_other_tag(self):
-        "Consecutive OTHER tags should throw syntax error"
-        with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
-            ast = self._make_ast([
-                lexertokens.OTHER("Some md",0),
-                lexertokens.OTHER("Some more",0)
-                ])
+    #def test_consecutive_other_tag(self):
+        #"Consecutive OTHER tags should throw syntax error"
+        #with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
+            #ast = self._make_ast([
+                #lexertokens.OTHER("Some md",0),
+                #lexertokens.OTHER("Some more",0)
+                #])
 
     def _test_ast_node(self, node, class_, string, lineno):
         self.assertIsInstance(

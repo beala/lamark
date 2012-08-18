@@ -17,7 +17,7 @@ class BinTag(object):
         self.lineno = lineno
 
     def __repr__(self):
-        return "Latex(%s, %d, %s, %s)" % (
+        return "BinTag(%s, %d, %s, %s)" % (
                 repr(self.string),
                 self.lineno,
                 repr(self.args),

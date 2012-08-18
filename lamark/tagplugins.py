@@ -1,7 +1,11 @@
 import latexgen
 import refgen
 
-tag_plugins = {
+binary_tag_plugins = {
         ("latex",):latexgen.LatexGen,
-        ("ref", "reffooter"):refgen.RefGen
-        }
+        ("ref",):refgen.RefGen,
+    }
+
+unary_tag_plugins = {
+        ("ref-footer",):refgen.FooterGen,
+    }

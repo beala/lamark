@@ -12,7 +12,7 @@ _arg = r'(\s*(' + _arg_name + r'\s*=)?\s*' + _arg_value + r'\s*)'
 #t_BIN_START = r'{%\s*' + _func_name + r'\s*' + _arg + r'*\s*%}'
 t_BIN_START = r'{%\s*(?:latex|ref)(?:\s+[a-zA-Z0-9_./:\-"\s=%]*%}|\s*%})'
 t_BIN_END = r"{%\s*end\s*%}"
-t_UNARY_TAG = r'{%\s*reffooter(?:\s+[a-zA-Z0-9_./:\-"\s=%]*%}|\s*%})'
+t_UNARY_TAG = r'{%\s*ref-footer(?:\s+[a-zA-Z0-9_./:\-"\s=%]*%}|\s*%})'
 t_NEWLINE = r'\n'
 
 class LmLexer(object):

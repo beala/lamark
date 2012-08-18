@@ -26,7 +26,7 @@ class LatexGen(object):
 
     TEX_TMP_NAME = "textemp.tex"
 
-    def __init__(self, args):
+    def __init__(self, args, shared_dict):
         """ This initializer SHOULD NOT be used by itself.
             Use the `with` keyword so the __exit__ and __enter__
             methods get used.

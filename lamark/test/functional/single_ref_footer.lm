@@ -4,4 +4,4 @@ Some text.
 
 Some more text.
 
-{%ref "footer"%}{%end%}
+{%ref-footer %}
