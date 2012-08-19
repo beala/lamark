@@ -20,11 +20,10 @@ class TestLmParser(unittest.TestCase):
         "Just markdown"
         ast = self._make_ast([
             lexertokens.OTHER("markdown",0)])
-        self._test_ast_node(
-                ast[0],
-                lmast.Markdown,
-                "markdown",
-                0)
+        correct_ast = [lmast.Markdown(
+            "markdown",
+            0)]
+        self._compare_ast(ast, correct_ast)
 
     def test_latex(self):
         "One LaTeX node"
@@ -32,22 +31,19 @@ class TestLmParser(unittest.TestCase):
             lexertokens.BIN_START("{%latex%}",0),
             lexertokens.OTHER("a^2", 0),
             lexertokens.BIN_END("{%end%}",0)])
-        self._test_ast_node(
-                ast[0],
-                lmast.BinTag,
-                "a^2",
-                0)
+        correct_ast = [lmast.BinTag(
+            [Str("a^2", 0)],
+            0,
+            "{%latex%}")]
+        self._compare_ast(ast, correct_ast)
 
     def test_latex(self):
         "Empty LaTeX tag."
         ast = self._make_ast([
             lexertokens.BIN_START("{%latex%}",0),
             lexertokens.BIN_END("{%end%}",0)])
-        self._test_ast_node(
-                ast[0],
-                lmast.BinTag,
-                [],
-                0)
+        correct_ast = [lmast.BinTag([], 0, "{%latex%}")]
+        self._compare_ast(ast, correct_ast)
 
     def test_latex_no_match(self):
         "One BIN_START without BIN_END. Should throw error."
@@ -87,22 +83,18 @@ class TestLmParser(unittest.TestCase):
         ast = self._make_ast([
             lexertokens.ESCAPE("\\",0),
             lexertokens.BIN_START("{%latex%}",0)])
-        self._test_ast_node(
-                ast[0],
-                lmast.Markdown,
-                "{%latex%}",
-                0)
+        correct_ast = [lmast.Markdown("{%latex%}", 0)
+            ]
+        self._compare_ast(ast, correct_ast)
 
     def test_escaped_bin_end(self):
         "Escaped BIN_END shouldn't end LaTeX section."
         ast = self._make_ast([
             lexertokens.ESCAPE("\\",0),
             lexertokens.BIN_END("{%end%}",0)])
-        self._test_ast_node(
-                ast[0],
-                lmast.Markdown,
-                "{%end%}",
-                0)
+        correct_ast = [lmast.Markdown("{%end%}", 0)
+            ]
+        self._compare_ast(ast, correct_ast)
 
     def test_escaped_bin_start_in_latex_section(self):
         "Escaped BIN_START in LaTeX section should be ignored."
@@ -111,11 +103,12 @@ class TestLmParser(unittest.TestCase):
             lexertokens.ESCAPE("\\",0),
             lexertokens.BIN_START("{%latex%}",0),
             lexertokens.BIN_END("{%end%}",0)])
-        self._test_ast_node(
-                ast[0],
-                lmast.BinTag,
-                ["{%latex%}"],
-                0)
+        correct_ast = [lmast.BinTag(
+            [lmast.Str("{%latex%}",0)],
+            0,
+            "{%latex%}")
+            ]
+        self._compare_ast(ast, correct_ast)
 
     def test_escaped_bin_end_section_in_latex(self):
         "Escaped BIN_END in LaTeX section should be ignored."
@@ -124,11 +117,12 @@ class TestLmParser(unittest.TestCase):
             lexertokens.ESCAPE("\\",0),
             lexertokens.BIN_END("{%end%}",0),
             lexertokens.BIN_END("{%end%}",0)])
-        self._test_ast_node(
-                ast[0],
-                lmast.BinTag,
-                ["{%end%}"],
-                0)
+        correct_ast = [lmast.BinTag(
+            [lmast.Str("{%end%}",0)],
+            0,
+            "{%latex%}")
+            ]
+        self._compare_ast(ast, correct_ast)
 
     def test_escape_in_other_isnt_escape(self):
         "An escape tag before an OTHER isn't an escape."
@@ -137,32 +131,89 @@ class TestLmParser(unittest.TestCase):
             lexertokens.ESCAPE("\\",0),
             lexertokens.OTHER("Some more Markdown",0)
             ])
-        self._test_ast_node(
-                ast[0],
-                lmast.Markdown,
-                "Some Markdown\Some more Markdown",
-                0)
+        correct_ast = [lmast.Markdown(
+            "Some Markdown\\Some more Markdown", 0)]
+        self._compare_ast(ast, correct_ast)
 
-    #def test_consecutive_other_tag(self):
-        #"Consecutive OTHER tags should throw syntax error"
-        #with self.assertRaises(lamarksyntaxerror.LaMarkSyntaxError):
-            #ast = self._make_ast([
-                #lexertokens.OTHER("Some md",0),
-                #lexertokens.OTHER("Some more",0)
-                #])
+    def test_nested_bin_tags1(self):
+        """Test nested BinTags with an OTHER token in the inner BinTag"""
+        ast = self._make_ast([
+            lexertokens.BIN_START("{%latex%}", 0),
+            lexertokens.BIN_START("{%latex%}", 1),
+            lexertokens.OTHER("Some latex.", 1),
+            lexertokens.BIN_END("{%end%}", 2),
+            lexertokens.BIN_END("{%end%}", 3),
+        ])
+        correct_ast = [lmast.BinTag(
+                [
+                    lmast.BinTag(
+                        [lmast.Str("Some latex.", 1)],
+                        1, "{%latex%}"
+                    )
+                ],
+                0, "{%latex%}"
+            )]
+        self._compare_ast(ast, correct_ast)
 
-    def _test_ast_node(self, node, class_, contents, lineno):
-        self.assertIsInstance(
-                node,
-                class_)
-        self.assertEqual(
-                node.get_contents(),
-                contents)
-        self.assertEqual(
-                node.lineno,
-                lineno)
+    def test_nested_bin_tags2(self):
+        """Test nested BinTags with an OTHER token in the other and
+           inner BinTags.
+        """
+        ast = self._make_ast([
+            lexertokens.BIN_START("{%latex%}", 0),
+            lexertokens.OTHER("Some latex.", 1),
+            lexertokens.BIN_START("{%latex%}", 2),
+            lexertokens.OTHER("Some latex.", 3),
+            lexertokens.BIN_END("{%end%}", 4),
+            lexertokens.BIN_END("{%end%}", 5),
+        ])
+        correct_ast = [lmast.BinTag(
+                [
+                    lmast.Str("Some latex.", 1),
+                    lmast.BinTag(
+                        [lmast.Str("Some latex.", 3)],
+                        2, "{%latex%}"
+                    )
+                ],
+                0, "{%latex%}"
+            )]
+        self._compare_ast(ast, correct_ast)
+
+    def test_nested_unary_in_binary(self):
+        """Test nesting of unary tag inside of binary tag."""
+        ast = self._make_ast([
+            lexertokens.BIN_START("{%latex%}", 0),
+            lexertokens.UNARY_TAG("{%ref-footer%}", 1),
+            lexertokens.BIN_END("{%end%}", 2),
+        ])
+        correct_ast = [lmast.BinTag(
+            [lmast.UnaryTag(1, "{%ref-footer%}")],
+            0,
+            "{%latex%}")]
+        self._compare_ast(ast, correct_ast)
+
+    def test_escaped_nested_unary_in_binary(self):
+        """Test nesting of escaped unary tag inside of binary tag."""
+        ast = self._make_ast([
+            lexertokens.BIN_START("{%latex%}", 0),
+            lexertokens.ESCAPE("\\", 1),
+            lexertokens.UNARY_TAG("{%ref-footer%}", 1),
+            lexertokens.BIN_END("{%end%}", 2),
+        ])
+        correct_ast = [lmast.BinTag(
+            [lmast.Str("{%ref-footer%}",1)],
+            0,
+            "{%latex%}")]
+        self._compare_ast(ast, correct_ast)
+
+    def _compare_ast(self, left_ast, right_ast):
+        """Asserts that two ASTs are equal by dumping their contents with
+           the repr method, and comparing the resultant strings.
+        """
+        self.assertEqual(lmast.dump(left_ast), lmast.dump(right_ast))
 
     def _make_ast(self, token_list):
+        """Parse a list of tokens using lmparser. Return the AST."""
         tok_stream = tokenstream.TokenStream(token_list)
         return self.parser.parse(tok_stream)
 

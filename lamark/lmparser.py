@@ -23,10 +23,15 @@ class LmParser(object):
             except StopIteration:
                 break
             if isinstance(cur_token, lexertokens.OTHER):
-                # If we're inside a binary tag, then just leave it as an
-                # OTHER token. The binary tag will take care of parsing it.
+                # If we're inside a binary tag, then use the Str node rather
+                # than the Markdown tag, because text inside a bintag isn't
+                # necessarily Markdown.
                 if len(bin_tag_stack) > 0:
-                    token_stack.append(cur_token.raw_match)
+                    token_stack.append(
+                            lmast.Str(
+                                cur_token.raw_match,
+                                cur_token.lineno)
+                            )
                 else:
                     token_stack.append(
                             lmast.Markdown(
@@ -35,8 +40,7 @@ class LmParser(object):
                     )
             elif isinstance(cur_token, lexertokens.ESCAPE):
                 # Get the next token and if the next token is one that can be
-                # escaped, escape it, and add it to the token_stack as a
-                # Markdown node.
+                # escaped, escape it, and add it to the token_stack.
                 try:
                     next_tok = token_gen.next()
                 except StopIteration:
@@ -55,25 +59,30 @@ class LmParser(object):
                 else:
                     raise Exception("Oops. Something broke in the parser.")
                 if len(token_stack) > 0:
-                    if isinstance(token_stack[-1], lmast.Markdown):
-                        # If the last node a Markdown node, just append to that.
+                    if (
+                            isinstance(token_stack[-1], lmast.Markdown) or
+                            isinstance(token_stack[-1], lmast.Str)):
+                        # Consolidate consecutive Markdown or Str nodes into
+                        # one by appending the the previous Str or Markdown
                         token_stack[-1].string += escaped_tok
-                    elif isinstance(token_stack[-1], str):
-                        token_stack[-1] = token_stack[-1] + escaped_tok
+                    elif len(bin_tag_stack) > 0:
+                        token_stack.append(
+                                lmast.Str(escaped_tok, cur_token.lineno)
+                                )
                     else:
-                        token_stack.append(escaped_tok)
+                        token_stack.append(
+                                lmast.Markdown(escaped_tok, cur_token.lineno)
+                                )
                 else:
-                    # Otherwise, make a new node.
+                    # Otherwise, make a new node. If the token stack is empty,
+                    # we can't be in a bin_tag, so it's safe to just make
+                    # a markdown node.
                     token_stack.append(
                             lmast.Markdown(
                                 escaped_tok,
                                 cur_token.lineno)
                     )
             elif isinstance(cur_token, lexertokens.BIN_START):
-                #if len(bin_tag_stack) > 0:
-                    #raise lamarksyntaxerror.LaMarkSyntaxError(
-                            #"Unexpected tag: '%s'" % str(cur_token),
-                            #cur_token.lineno)
                 bin_tag_stack.append(cur_token)
                 token_stack.append(cur_token)
             elif isinstance(cur_token, lexertokens.BIN_END):
@@ -93,12 +102,11 @@ class LmParser(object):
                     if isinstance(old_tok, lexertokens.BIN_START):
                         break
                 bin_start = temp_stack.pop()
-                bin_body = []
-                for token in temp_stack:
-                    if isinstance(token, lexertokens.OTHER):
-                        bin_body.append(token.raw_match)
-                    else:
-                        bin_body.append(token)
+                # Because temp_stack is a stack, the earliest elements are
+                # at the end of the list. Reverse so iterating through it will
+                # start with earliest elements.
+                temp_stack.reverse()
+                bin_body = temp_stack
                 # Wrap everything in between in a BinTag AST node.
                 token_stack.append(
                         lmast.BinTag(

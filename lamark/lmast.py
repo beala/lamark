@@ -58,3 +58,17 @@ class UnaryTag(object):
 
     def get_contents(self):
         return [self.args, self.kwargs]
+
+class Str(object):
+    def __init__(self, string, lineno):
+        self.string = string
+        self.lineno = lineno
+
+    def __repr__(self):
+        return "Str(%s, %d)" % (repr(self.string), self.lineno)
+
+    def __str__(self):
+        return str(self.string)
+
+def dump(ast):
+    return repr(ast)
