@@ -21,7 +21,14 @@ class TagParser(object):
                 continue
             elif isinstance(node, lmast.BinTag):
                 args, kwargs = self._process_tag(node)
-                new_ast.append(lmast.BinTag(node.string, node.lineno, args, kwargs))
+                new_ast.append(
+                        lmast.BinTag(
+                            node.children,
+                            node.lineno,
+                            node.raw_tag,
+                            args,
+                            kwargs)
+                )
                 continue
         return new_ast
 
@@ -43,11 +50,11 @@ class TagParser(object):
         i = 0
         ff = 0
         t_stream = []
-        for i in xrange(len(latex_tag.args)):
+        for i in xrange(len(latex_tag.raw_tag)):
             if i < ff:
                 continue
             for test in token_tests:
-                (ff, node)= test(latex_tag.args, i)
+                (ff, node)= test(latex_tag.raw_tag, i)
                 if i < ff:
                     # Fast forwarded, but ignore whichever characters
                     # we've fast forwarded past.

@@ -46,7 +46,7 @@ class TestLmParser(unittest.TestCase):
         self._test_ast_node(
                 ast[0],
                 lmast.BinTag,
-                "",
+                [],
                 0)
 
     def test_latex_no_match(self):
@@ -114,7 +114,7 @@ class TestLmParser(unittest.TestCase):
         self._test_ast_node(
                 ast[0],
                 lmast.BinTag,
-                "{%latex%}",
+                ["{%latex%}"],
                 0)
 
     def test_escaped_bin_end_section_in_latex(self):
@@ -127,7 +127,7 @@ class TestLmParser(unittest.TestCase):
         self._test_ast_node(
                 ast[0],
                 lmast.BinTag,
-                "{%end%}",
+                ["{%end%}"],
                 0)
 
     def test_escape_in_other_isnt_escape(self):
@@ -151,13 +151,13 @@ class TestLmParser(unittest.TestCase):
                 #lexertokens.OTHER("Some more",0)
                 #])
 
-    def _test_ast_node(self, node, class_, string, lineno):
+    def _test_ast_node(self, node, class_, contents, lineno):
         self.assertIsInstance(
                 node,
                 class_)
         self.assertEqual(
-                str(node),
-                string)
+                node.get_contents(),
+                contents)
         self.assertEqual(
                 node.lineno,
                 lineno)

@@ -27,7 +27,7 @@ class MdCodeGen(object):
                             "Unrecognized tag: " + func_name + ". Skipping.")
                     continue
                 pure_md_acc += str(plugin_obj.generate(
-                    str(node),
+                    node.children[0],
                     node.lineno,
                     node.args,
                     node.kwargs)

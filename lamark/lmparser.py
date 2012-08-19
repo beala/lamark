@@ -26,7 +26,7 @@ class LmParser(object):
                 # If we're inside a binary tag, then just leave it as an
                 # OTHER token. The binary tag will take care of parsing it.
                 if len(bin_tag_stack) > 0:
-                    token_stack.append(cur_token)
+                    token_stack.append(cur_token.raw_match)
                 else:
                     token_stack.append(
                             lmast.Markdown(
@@ -34,9 +34,9 @@ class LmParser(object):
                                 cur_token.lineno)
                     )
             elif isinstance(cur_token, lexertokens.ESCAPE):
-                # Peek ahead, and if the next token is a token that can be
-                # escaped, pull it off the token stream, escape it, and
-                # add it to the token_stack as a Markdown node.
+                # Get the next token and if the next token is one that can be
+                # escaped, escape it, and add it to the token_stack as a
+                # Markdown node.
                 try:
                     next_tok = token_gen.next()
                 except StopIteration:
@@ -45,20 +45,23 @@ class LmParser(object):
                         isinstance(next_tok, lexertokens.BIN_END) or
                         isinstance(next_tok, lexertokens.BIN_START) or
                         isinstance(next_tok, lexertokens.UNARY_TAG)):
-                    #next_tok = token_gen.next()
                     escaped_tok = next_tok.raw_match
                 elif isinstance(next_tok, lexertokens.OTHER):
                     # Next token isn't anything special. Just treat the escape
                     # as a backslash.
                     escaped_tok = "\\" + next_tok.raw_match
-                else:
+                elif next_tok is None:
                     escaped_tok = "\\"
-                # WARNING: This might break if we allow nested tags.
-                if (
-                        len(token_stack) > 0 and
-                        isinstance(token_stack[-1], lmast.Markdown)):
-                    # If the last node a Markdown node, just append to that.
-                    token_stack[-1].string += escaped_tok
+                else:
+                    raise Exception("Oops. Something broke in the parser.")
+                if len(token_stack) > 0:
+                    if isinstance(token_stack[-1], lmast.Markdown):
+                        # If the last node a Markdown node, just append to that.
+                        token_stack[-1].string += escaped_tok
+                    elif isinstance(token_stack[-1], str):
+                        token_stack[-1] = token_stack[-1] + escaped_tok
+                    else:
+                        token_stack.append(escaped_tok)
                 else:
                     # Otherwise, make a new node.
                     token_stack.append(
@@ -67,40 +70,49 @@ class LmParser(object):
                                 cur_token.lineno)
                     )
             elif isinstance(cur_token, lexertokens.BIN_START):
-                if len(bin_tag_stack) > 0:
-                    raise lamarksyntaxerror.LaMarkSyntaxError(
-                            "Error: Unexpected tag: '%s'" % str(cur_token),
-                            cur_token.lineno)
+                #if len(bin_tag_stack) > 0:
+                    #raise lamarksyntaxerror.LaMarkSyntaxError(
+                            #"Unexpected tag: '%s'" % str(cur_token),
+                            #cur_token.lineno)
                 bin_tag_stack.append(cur_token)
                 token_stack.append(cur_token)
             elif isinstance(cur_token, lexertokens.BIN_END):
                 # Find where the last BIN_START was, so pop off the stack
-                # and into the temp_stack, until it's found.
+                # and into the temp_stack, until it's found. The goal is to grab
+                # Everything between the current END and last START tag, and
+                # wrap it in a BinaryTag node
                 temp_stack = []
                 while True:
                     try:
                         old_tok = token_stack.pop()
                     except:
                         raise lamarksyntaxerror.LaMarkSyntaxError(
-                                "Error: {%end%} tag has no matching start tag.",
+                                "{%end%} tag has no matching start tag.",
                                 cur_token.lineno)
                     temp_stack.append(old_tok)
                     if isinstance(old_tok, lexertokens.BIN_START):
                         break
                 bin_start = temp_stack.pop()
-                try:
-                    bin_body = temp_stack.pop()
-                except IndexError:
-                    bin_body = lexertokens.OTHER("", bin_start.lineno)
+                bin_body = []
+                for token in temp_stack:
+                    if isinstance(token, lexertokens.OTHER):
+                        bin_body.append(token.raw_match)
+                    else:
+                        bin_body.append(token)
                 # Wrap everything in between in a BinTag AST node.
                 token_stack.append(
                         lmast.BinTag(
-                            str(bin_body),
-                            bin_body.lineno,
-                            str(bin_start)
+                            bin_body,
+                            bin_start.lineno,
+                            bin_start.raw_match,
                         )
                 )
-                bin_tag_stack.pop()
+                try:
+                    bin_tag_stack.pop()
+                except:
+                    raise lamarksyntaxerror.LaMarkSyntaxError(
+                            "{%end%} tag has no matching start tag.",
+                            cur_token.lineno)
             elif isinstance(cur_token, lexertokens.UNARY_TAG):
                 # Unary tags are easy. Just convert them in AST nodes.
                 token_stack.append(
@@ -110,7 +122,7 @@ class LmParser(object):
                 )
         if len(bin_tag_stack) > 0:
             raise lamarksyntaxerror.LaMarkSyntaxError(
-                    "Error: Unexpected end of file. Where's the {%end%} tag?",
+                    "Unexpected end of file. Where's the {%end%} tag?",
                     cur_token.lineno)
         # And then the stack is the AST. How cool is that?
         return token_stack

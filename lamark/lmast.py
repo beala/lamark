@@ -9,23 +9,36 @@ class Markdown(object):
     def __str__(self):
         return str(self.string)
 
+    def get_contents(self):
+        return str(self.string)
+
 class BinTag(object):
-    def __init__(self, string, lineno, args, kwargs={}):
-        self.string = string
+    #def __init__(self, string, lineno, args, kwargs={}):
+        #self.string = string
+        #self.args = args
+        #self.kwargs = kwargs
+        #self.lineno = lineno
+
+    def __init__(self, children, lineno, raw_tag, args=[], kwargs={}):
+        self.children = children
+        self.lineno = lineno
+        self.raw_tag = raw_tag
         self.args = args
         self.kwargs = kwargs
-        self.lineno = lineno
 
     def __repr__(self):
         return "BinTag(%s, %d, %s, %s)" % (
-                repr(self.string),
+                repr(self.children),
                 self.lineno,
                 repr(self.args),
                 repr(self.kwargs)
                 )
 
     def __str__(self):
-        return str(self.string)
+        return str(self.raw_tag)
+
+    def get_contents(self):
+        return self.children
 
 class UnaryTag(object):
     def __init__(self, lineno, args, kwargs={}):
@@ -43,28 +56,5 @@ class UnaryTag(object):
     def __str__(self):
         return ""
 
-class RefItem(object):
-    """Node for a reference item. This contains the contents of one
-       footnote.
-    """
-    def __init__(self, text):
-        self.text = text
-
-    def __repr__(self):
-        return "RefBody(%s)" % repr(self.text)
-
-    def __str__(self):
-        return str(self.text)
-
-class RefFooter(object):
-    """For the reference footer. This is the placeholder for where the
-       references will be placed in the processed text.
-    """
-    def __init__(self):
-        pass
-
-    def __repr__(self):
-        return "RefFooter()"
-
-    def __str__(self):
-        return ""
+    def get_contents(self):
+        return [self.args, self.kwargs]
