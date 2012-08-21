@@ -12,7 +12,9 @@ class RefGen(object):
     def tear_down(self):
         pass
 
-    def generate(self, ref_string, lineno, args, kwargs):
+    def generate(self, children, lineno, args, kwargs):
+        string_list = map(str, children)
+        ref_string = "".join(string_list)
         self._ref_count += 1
         self._add_ref(ref_string)
         return lmast.Markdown("<sup>%d</sup>" % self._ref_count, lineno)
@@ -28,8 +30,11 @@ class FooterGen(object):
         pass
 
     def generate(self, lineno, args, kwargs):
-        for ref in self._ref_markdown_gen():
-            return lmast.Markdown(ref + "\n", lineno)
+        md_ref = "\n".join(self._ref_markdown_gen())
+        return lmast.Markdown(md_ref + "\n", lineno)
+        #for ref in self._ref_markdown_gen():
+            #md_ref += ref + "\n"
+            #return lmast.Markdown(ref + "\n", lineno)
 
     def _ref_markdown_gen(self):
         ref_count = 0

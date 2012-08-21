@@ -37,7 +37,7 @@ class MdCodeGen(object):
                         "Unrecognized tag: " + func_name + ". Skipping.")
                 return None
             new_node = plugin_obj.generate(
-                node.children[0],
+                node.children,
                 node.lineno,
                 node.args,
                 node.kwargs)

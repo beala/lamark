@@ -77,11 +77,13 @@ class LatexGen(object):
             return True
         return False
 
-    def generate(self, latex_string, lineno, args, kwargs):
-        latex_string = latex_string.string
+    def generate(self, children, lineno, args, kwargs):
+        latex_string = ""
+        for child in children:
+            latex_string += child.string
         # Ignore empty strings
         if not latex_string.strip():
-            return ""
+            return lmast.Markdown("", lineno)
         self._reset_prefs()
         self._process_tag_args(lineno, args, kwargs)
         self._validate_args(args, kwargs)

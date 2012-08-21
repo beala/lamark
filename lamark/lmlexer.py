@@ -4,6 +4,9 @@ import tokenstream
 import tagplugins
 
 def build_tag_regex(plugin_dict):
+    """Given a plugin dict (probably from tagplugins) build an 'or' regex
+       group. Something like: (?:latex|ref)
+    """
     func_name_list = []
     for func_tuple in plugin_dict:
         for func_name in func_tuple:
@@ -33,11 +36,6 @@ class LmLexer(object):
         # other_acc. We need to know what line this other_acc started on.
         self._acc_newline_count = 1
         #self._init_func_names()
-
-    #def _init_func_names(self):
-        #func_names = tagplugins.tag_plugins.keys()
-        #func_names_regex = r"|".join(func_names)
-        #_func_name = r"(?:" +func_names_regex + r")"
 
     def lex(self, string):
         """Lexes the string into a TokenStream of tokens.
