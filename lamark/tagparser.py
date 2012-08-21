@@ -5,7 +5,8 @@ import lamarksyntaxerror
 
 class TagParser(object):
     t_ARG = r"\w+"
-    t_FUNC_NAME = r"{%\s*(\w+)"
+    #t_FUNC_NAME = r"{%\s*(\w+)"
+    t_FUNC_NAME = r"{%\s*([a-zA-Z-]+)"
     t_ASSIGN = r"="
     t_VALUE = r'"([a-zA-Z0-9_ \./:\\-]*)"'
     t_IGNORE = r"(?:\s|%})*"
@@ -14,23 +15,35 @@ class TagParser(object):
         pass
 
     def parse(self, ast):
-        new_ast = []
-        for node in ast:
-            if isinstance(node, lmast.Markdown):
-                new_ast.append(node)
-                continue
-            elif isinstance(node, lmast.BinTag):
-                args, kwargs = self._process_tag(node)
-                new_ast.append(
-                        lmast.BinTag(
-                            node.children,
-                            node.lineno,
-                            node.raw_tag,
-                            args,
-                            kwargs)
-                )
-                continue
-        return new_ast
+        """Parses the tags of the nodes in a LaMark AST."""
+        parsed_ast = lmast.map_postorder(ast, self.tag_parse_dispatch)
+        return parsed_ast
+
+    def tag_parse_dispatch(self, node):
+        """Parses the tags of one node."""
+        if isinstance(node, lmast.Markdown):
+            return node
+        elif isinstance(node, lmast.Str):
+            return node
+        elif isinstance(node, lmast.Document):
+            return node
+        elif isinstance(node, lmast.BinTag):
+            args, kwargs = self._process_tag(node)
+            return lmast.BinTag(
+                        node.children,
+                        node.lineno,
+                        node.raw_tag,
+                        args,
+                        kwargs)
+        elif isinstance(node, lmast.UnaryTag):
+            args, kwargs = self._process_tag(node)
+            return lmast.UnaryTag(
+                        node.lineno,
+                        node.raw_tag,
+                        args,
+                        kwargs)
+        else:
+            raise Exception("Oops. Something broke in the tag parser.")
 
     def _process_tag(self, latex_tag):
         self.tag_lineno = latex_tag.lineno

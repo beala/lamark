@@ -6,6 +6,7 @@ import re
 import logging
 import sys
 import lamarkargumenterror
+import lmast
 
 class LatexGen(object):
     """Given a peice of Latex, generate an image, and the markdown
@@ -77,6 +78,7 @@ class LatexGen(object):
         return False
 
     def generate(self, latex_string, lineno, args, kwargs):
+        latex_string = latex_string.string
         # Ignore empty strings
         if not latex_string.strip():
             return ""
@@ -88,7 +90,7 @@ class LatexGen(object):
             alt_text = image_name
         else:
             alt_text = self.prefs_dict["alt"]
-        return "![%s](%s)" % (alt_text, image_name)
+        return lmast.Markdown("![%s](%s)" % (alt_text, image_name), lineno)
 
     def _process_tag_args(self, lineno, args, kwargs):
         logging.debug(args)

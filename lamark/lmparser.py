@@ -115,12 +115,7 @@ class LmParser(object):
                             bin_start.raw_match,
                         )
                 )
-                try:
-                    bin_tag_stack.pop()
-                except:
-                    raise lamarksyntaxerror.LaMarkSyntaxError(
-                            "{%end%} tag has no matching start tag.",
-                            cur_token.lineno)
+                bin_tag_stack.pop()
             elif isinstance(cur_token, lexertokens.UNARY_TAG):
                 # Unary tags are easy. Just convert them in AST nodes.
                 token_stack.append(
@@ -133,4 +128,4 @@ class LmParser(object):
                     "Unexpected end of file. Where's the {%end%} tag?",
                     cur_token.lineno)
         # And then the stack is the AST. How cool is that?
-        return token_stack
+        return lmast.Document(token_stack)

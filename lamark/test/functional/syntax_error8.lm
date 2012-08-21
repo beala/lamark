@@ -1,0 +1,7 @@
+{%
+latex
+    imgName="My Image.png"
+    
+    %} a^2{%end%}   {%end%}
+
+

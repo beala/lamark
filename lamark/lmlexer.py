@@ -84,8 +84,13 @@ class LmLexer(object):
                 other_acc += string[i]
 
         if other_acc:
+            trailing_newline_count = self._count_trailing_char(other_acc, "\n")
             # Flush the `other_acc` if it contains anything.
-            t_stream.append(lexertokens.OTHER(other_acc, self._newline_count))
+            t_stream.append(
+                    lexertokens.OTHER(
+                        other_acc,
+                        self._newline_count - trailing_newline_count)
+            )
 
         return tokenstream.TokenStream(t_stream)
 
@@ -95,6 +100,15 @@ class LmLexer(object):
             if char == "\n":
                 newline_count += 1
         return newline_count
+
+    def _count_trailing_char(self, string, target_char):
+        trailing_char_count = 0
+        for char in reversed(string):
+            if char == target_char:
+                trailing_char_count += 1
+            else:
+                break
+        return trailing_char_count
 
     def _test_bin_start(self, string, n):
         matchObj = re.match(t_BIN_START, string[n:])

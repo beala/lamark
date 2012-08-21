@@ -14,39 +14,47 @@ class MdCodeGen(object):
         pass
 
     def generate(self, lamark_ast):
-        pure_md_acc = ""
         self._init_plugins()
-        for node in lamark_ast:
-            if isinstance(node, lmast.Markdown):
-                pure_md_acc += str(node)
-            elif isinstance(node, lmast.BinTag):
-                func_name = node.kwargs["func_name"]
-                plugin_obj = self._find_binary_plugin(func_name)
-                if plugin_obj == None:
-                    logging.warning(
-                            "Unrecognized tag: " + func_name + ". Skipping.")
-                    continue
-                pure_md_acc += str(plugin_obj.generate(
-                    node.children[0],
-                    node.lineno,
-                    node.args,
-                    node.kwargs)
-                    )
-            elif isinstance(node, lmast.UnaryTag):
-                func_name = node.kwargs["func_name"]
-                plugin_obj = self._find_unary_plugin(func_name)
-                if plugin_obj == None:
-                    logging.warning(
-                            "Unrecognized tag: " + func_name + ". Skipping.")
-                    continue
-                pure_md_acc += str(plugin_obj.generate(
-                    node.lineno,
-                    node.args,
-                    node.kwargs)
-                    )
-
+        md_ast = lmast.map_postorder(
+                lamark_ast,
+                self.gen_dispatch)
+        md_string = ""
+        for md_node in md_ast.doc:
+            md_string += md_node.string
         self._tear_down_plugins()
-        return pure_md_acc
+        return md_string
+
+    def gen_dispatch(self, node):
+        if isinstance(node, lmast.Markdown):
+            new_node = node
+        elif isinstance(node, lmast.Str):
+            new_node = node
+        elif isinstance(node, lmast.BinTag):
+            func_name = node.kwargs["func_name"]
+            plugin_obj = self._find_binary_plugin(func_name)
+            if plugin_obj == None:
+                logging.warning(
+                        "Unrecognized tag: " + func_name + ". Skipping.")
+                return None
+            new_node = plugin_obj.generate(
+                node.children[0],
+                node.lineno,
+                node.args,
+                node.kwargs)
+        elif isinstance(node, lmast.UnaryTag):
+            func_name = node.kwargs["func_name"]
+            plugin_obj = self._find_unary_plugin(func_name)
+            if plugin_obj == None:
+                logging.warning(
+                        "Unrecognized tag: " + func_name + ". Skipping.")
+                return None
+            new_node = plugin_obj.generate(
+                node.lineno,
+                node.args,
+                node.kwargs)
+        elif isinstance(node, lmast.Document):
+            new_node = node
+        return new_node
 
     def _init_plugins(self):
         """Create the plugin objects, and add them to the plugin dict

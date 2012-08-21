@@ -1,4 +1,5 @@
 import logging
+import lmast
 
 REFGEN_DICT="RefGenDict"
 
@@ -14,7 +15,7 @@ class RefGen(object):
     def generate(self, ref_string, lineno, args, kwargs):
         self._ref_count += 1
         self._add_ref(ref_string)
-        return "<sup>%d</sup>" % self._ref_count
+        return lmast.Markdown("<sup>%d</sup>" % self._ref_count, lineno)
 
     def _add_ref(self, ref_string):
         self._shared_dict[REFGEN_DICT].append(ref_string)
@@ -28,7 +29,7 @@ class FooterGen(object):
 
     def generate(self, lineno, args, kwargs):
         for ref in self._ref_markdown_gen():
-            return ref + "\n"
+            return lmast.Markdown(ref + "\n", lineno)
 
     def _ref_markdown_gen(self):
         ref_count = 0

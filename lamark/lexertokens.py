@@ -7,7 +7,7 @@ class BIN_START(token):
         self.lineno = lineno
 
     def __repr__(self):
-        return "BIN_START(%s, %d)" % (self.raw_match, self.lineno)
+        return "BIN_START(%s, %d)" % (repr(self.raw_match), self.lineno)
 
     def __str__(self):
         return self.raw_match
@@ -18,7 +18,7 @@ class BIN_END(token):
         self.lineno = lineno
 
     def __repr__(self):
-        return "BIN_END(%s, %d)" % (self.raw_match, self.lineno)
+        return "BIN_END(%s, %d)" % (repr(self.raw_match), self.lineno)
 
     def __str__(self):
         return self.raw_match
@@ -29,7 +29,7 @@ class UNARY_TAG(token):
         self.lineno = lineno
 
     def __repr__(self):
-        return "UNARY_TAG(%s, %d)" % (self.raw_match, self.lineno)
+        return "UNARY_TAG(%s, %d)" % (repr(self.raw_match), self.lineno)
 
     def __str__(self):
         return self.raw_match
