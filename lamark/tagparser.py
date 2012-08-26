@@ -6,9 +6,10 @@ import lamarksyntaxerror
 class TagParser(object):
     t_ARG = r"\w+"
     #t_FUNC_NAME = r"{%\s*(\w+)"
-    t_FUNC_NAME = r"{%\s*([a-zA-Z-]+)"
+    t_FUNC_NAME = r"{%\s*([a-zA-Z-0-9_]+)"
     t_ASSIGN = r"="
-    t_VALUE = r'"([a-zA-Z0-9_ \./:\\-]*)"'
+    #t_VALUE = r'"([a-zA-Z0-9_ \./:\\-]*)"'
+    t_VALUE = r'"([^"]*)"'
     t_IGNORE = r"(?:\s|%})*"
 
     def __init__(self, args):

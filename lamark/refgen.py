@@ -17,7 +17,7 @@ class RefGen(object):
         string_list = map(str, children)
         ref_string = "".join(string_list)
         self._ref_count += 1
-        self._add_ref(ref_string)
+        self._add_ref(ref_string.strip())
         footer_link = "#" + self.filename + str(self._ref_count) + "footer"
         ref_link = self.filename + str(self._ref_count) + "ref"
         return lmast.Markdown("<a name='%s'>[<sup>%d</sup>](%s)</a>" % (ref_link,self._ref_count,footer_link), lineno)

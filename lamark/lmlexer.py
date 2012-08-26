@@ -17,11 +17,14 @@ def build_tag_regex(plugin_dict):
 t_ESCAPE = "\\"
 t_BIN_START = (r'{%\s*'+
         build_tag_regex(tagplugins.binary_tag_plugins) +
-        r'(?:\s+[a-zA-Z0-9_./:\-"\s=%]*%}|\s*%})')
+        r'(?:\s+((?!%}).)*%}|\s*%})')
+        #r'\s*((?!%}).)*%}')
+        #r'(?:\s+[a-zA-Z0-9_./:\-"\s=%]*%}|\s*%})')
 t_BIN_END = r"{%\s*end\s*%}"
 t_UNARY_TAG = (r'{%\s*'+
         build_tag_regex(tagplugins.unary_tag_plugins) +
-        r'(?:\s+[a-zA-Z0-9_./:\-"\s=%]*%}|\s*%})')
+        r'(?:\s+((?!%}).)*%}|\s*%})')
+        #r'(?:\s+[a-zA-Z0-9_./:\-"\s=%]*%}|\s*%})')
 t_NEWLINE = r'\n'
 
 class LmLexer(object):

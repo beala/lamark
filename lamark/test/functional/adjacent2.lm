@@ -1,4 +1,4 @@
-{%latex%}a^2+b^2=c^2{%end%}{%ref%}Due to Pythagoras.{%end%}
+{%math%}a^2+b^2=c^2{%end%}{%ref%}Due to Pythagoras.{%end%}
 
 ## References
 

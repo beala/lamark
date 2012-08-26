@@ -2,7 +2,12 @@ import latexgen
 import refgen
 
 binary_tag_plugins = {
-        ("latex",):latexgen.LatexGen,
+        (
+            "math",
+            "displaymath",
+            "picture",
+            "pre",
+            "doc"):latexgen.LatexGen,
         ("ref",):refgen.RefGen,
     }
 
