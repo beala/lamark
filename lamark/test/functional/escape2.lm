@@ -1,2 +1,2 @@
 Heres a slash: \
-{%latex%}a^2{%end%}
+{%math%}a^2{%end%}

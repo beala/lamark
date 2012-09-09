@@ -25,11 +25,11 @@ class LatexGen(object):
     DICT_alt_txt = "alt"
 
     prefs_dict = {
-            "imgZoom": 2000,
-            "path": "",
-            "imgName": "",
-            "alt": "",
-            "func_name": "latex"
+            "imgZoom": None,
+            "path": None,
+            "imgName": None,
+            "alt": None,
+            "func_name": None,
             }
 
     TEX_TMP_NAME = "textemp.tex"
@@ -73,10 +73,10 @@ class LatexGen(object):
 
     def _reset_prefs(self):
         prefs_dict = {
-                "imgZoom": 2000,
-                "path": "",
-                "imgName": "",
-                "alt": "",
+                "imgZoom": None,
+                "path": None,
+                "imgName": None,
+                "alt": None,
                 "title": None,
                 #"x": 0,
                 #"y": 0,
@@ -89,8 +89,8 @@ class LatexGen(object):
                 children,
                 "")
         # Ignore empty strings
-        if not latex_body.strip():
-            return lmast.Markdown("", lineno)
+        #if not latex_body.strip():
+        #    return lmast.Markdown("", lineno)
         self._reset_prefs()
         self._process_tag_args(lineno, args, kwargs)
         self._validate_args(args, kwargs)
@@ -100,7 +100,7 @@ class LatexGen(object):
                 kwargs["func_name"] == DISPLAYMATH_NAME or
                 kwargs["func_name"] == DOC_NAME):
             image_name = self._compile_latex(latex_body)
-            if self.prefs_dict["alt"] == "":
+            if self.prefs_dict["alt"] is None:
                 alt_text = image_name
             else:
                 alt_text = self.prefs_dict["alt"]
@@ -121,11 +121,11 @@ class LatexGen(object):
 
     def _process_math_args(self, lineno, args, kwargs):
         self.prefs_dict["func_name"] = kwargs["func_name"]
-        self.prefs_dict["path"] = args[0] if len(args) > 0 else ""
-        self.prefs_dict["alt"] = args[1] if len(args) > 1 else ""
-        self.prefs_dict["title"] = args[2] if len(args) > 1 else None
-        self.prefs_dict["imgZoom"] = args[3] if len(args) > 2 else "2000"
-        self.prefs_dict["imgName"] = args[4] if len(args) > 3 else ""
+        self.prefs_dict["path"] = args[0] if len(args) > 0 else None
+        self.prefs_dict["alt"] = args[1] if len(args) > 1 else None
+        self.prefs_dict["title"] = args[2] if len(args) > 2 else None
+        self.prefs_dict["imgName"] = args[3] if len(args) > 3 else None
+        self.prefs_dict["imgZoom"] = args[4] if len(args) > 4 else "2000"
         for key, value in kwargs.items():
             if key not in self.prefs_dict:
                 raise lamarkargumenterror.LaMarkArgumentError(
@@ -133,7 +133,10 @@ class LatexGen(object):
                         lineno)
             self.prefs_dict[key] = value
 
-        if len(self.prefs_dict["path"]) > 0 and self.prefs_dict["path"][-1] != "/":
+        if (
+                self.prefs_dict["path"] is not None and
+                len(self.prefs_dict["path"]) > 0 and
+                self.prefs_dict["path"][-1] != "/"):
             self.prefs_dict["path"] += "/"
 
     def _process_doc_args(self, lineno, args, kwargs):
@@ -178,6 +181,8 @@ class LatexGen(object):
             raise Exception("Oops. Something broke in the latex gen.")
 
     def _validate_args(self, args, kwargs):
+        if self.prefs_dict["imgZoom"] is None:
+            self.prefs_dict["imgZoom"] = "2000"
         if int(self.prefs_dict["imgZoom"]) > 3000:
             logging.warn("imgZoom is very large: %d", int(self.prefs_dict["imgZoom"]))
         if int(self.prefs_dict["imgZoom"]) < 1000:
@@ -242,6 +247,7 @@ class LatexGen(object):
                 "latex",
                 "-output-directory=" + self._tex_tmp_dir,
                 "-halt-on-error",
+                "-interaction=batchmode",
                 tex_tmp.name,
                 ]
         p = subprocess.Popen(
@@ -252,17 +258,22 @@ class LatexGen(object):
         out,err = p.communicate()
         logging.debug(out)
         if p.returncode:
-            raise CommandException("Error in call to LaTeX: " + str(out))
+            raise CommandException('Error trying to render LaTeX: "' +
+                    str(latex_body) + '".\nLaTeX threw error: "' + str(out)+ '".')
 
         # Generate file for png and convert dvi to png
-        if self.prefs_dict["imgName"] == "":
+        if self.prefs_dict["imgName"] is None:
             image_name = self._fn_gen.next()
         else:
             image_name = self.prefs_dict["imgName"]
+        if self.prefs_dict["imgZoom"] is None:
+            image_zoom = "2000"
+        else:
+            image_zoom = str(self.prefs_dict["imgZoom"])
         dvipng_call = [
                 "dvipng",
                 "-T", "tight",
-                "-x", str(self.prefs_dict["imgZoom"]),
+                "-x", image_zoom,
                 "-z", "6",
                 tex_tmp.name[0:-3] + "dvi",
                 "-o", self._image_dir + ("%s" % image_name),
@@ -277,7 +288,7 @@ class LatexGen(object):
         if p.returncode:
             raise CommandException("Error in call to dvipng: " + str(out))
 
-        if self.prefs_dict["path"] != "":
+        if self.prefs_dict["path"] is not None:
             image_name = self.prefs_dict["path"] + image_name
 
         return image_name

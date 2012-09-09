@@ -1,7 +1,7 @@
 # Demo Of Latex + Markdown
 
 LaMark allows LaTeX equations to be inserted into Markdown documents. For example: {%ref%}
-Another form: {%math imgName="pythag2.png" path="http://media.usrsb.in/lamark-demo/" %}
+Notice that tags can also be nested. Here's the same equation in another form: {%math imgName="pythag2.png" path="http://media.usrsb.in/lamark-demo/" %}
 b^2=c^2-a^2
 {%end%}.{%end%}
 {% math imgName="pythag.png" path="http://media.usrsb.in/lamark-demo/" %}
@@ -16,49 +16,14 @@ Of course, more complicated formulas are possible:{%ref%}The normal distribution
 f(x,\mu ,\sigma^2) = \frac{1}{\sigma \sqrt{2\pi}}e^{-\frac{1}{2}(\frac{x-\mu}{\sigma})^2}
 {% end%}
 
-LaMark also includes support for LaTeX pictures:{%ref%}
-Generated using the `\{%picture%}` tag.
-{%end%}
-
-{%pre%}
-\pagestyle{empty}
-\setlength{\unitlength}{1cm}
-{%end%}{%picture y="5" x="5" imgZoom="3000" title="An image!" path="http://media.usrsb.in/lamark-demo/"%}
-\put(0,0){\line(0,1){1}}
-\put(0,0){\line(1,0){1}}
-\put(0,0){\line(1,1){1}}
-\put(0,0){\line(1,2){.5}}
-\put(0,0){\line(1,3){.3333}}
-\put(0,0){\line(1,4){.25}}
-\put(0,0){\line(1,5){.2}}
-\put(0,0){\line(1,6){.1667}}
-\put(0,0){\line(2,1){1}}
-\put(0,0){\line(2,3){.6667}}
-\put(0,0){\line(2,5){.4}}
-\put(0,0){\line(3,1){1}}
-\put(0,0){\line(3,2){1}}
-\put(0,0){\line(3,4){.75}}
-\put(0,0){\line(3,5){.6}}
-\put(0,0){\line(4,1){1}}
-\put(0,0){\line(4,3){1}}
-\put(0,0){\line(4,5){.8}}
-\put(0,0){\line(5,1){1}}
-\put(0,0){\line(5,2){1}}
-\put(0,0){\line(5,3){1}}
-\put(0,0){\line(5,4){1}}
-\put(0,0){\line(5,6){.8333}}
-\put(0,0){\line(6,1){1}}
-\put(0,0){\line(6,5){1}}
-
-{%end%}
-
-If you like, you can also embed arbitrary {%doc path="http://media.usrsb.in/lamark-demo/"%}
+If you like, you can also embed arbitrary LaTeX using the `\{%latex%}` tag. For example: {%latex
+path="http://media.usrsb.in/lamark-demo/"%}
 \documentclass{article}
 \pagestyle{empty}
 \begin{document}
 {\LaTeX}
 \end{document}
-{%end%} using the `\{%doc%}` tag.
+{%end%}
 
 Once the the document has been written, running it through the LaMark processor is easy:{%ref%}
 Check it out at [the github page](https://github.com/beala/lamark).

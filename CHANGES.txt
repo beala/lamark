@@ -1,0 +1,12 @@
+0.2.0:
+- The "latex" tag has now been renamed to "math".
+- Added a new "latex" tag that accepts any arbitrary LaTeX.
+- Added "displaymath" tag that renders equations to large indented images.
+- Add "ref" and "ref-footer" for footnote support.
+- Tags can now be nested, so "ref" tags can now contain "math" tags, etc.
+- Lots of bugfixes.
+
+0.1.4:
+- Default input is now stdin, and -f arg can be left off.
+- Added better syntax error messages for malformed tags.
+- Bugfixes.

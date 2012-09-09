@@ -5,6 +5,8 @@ Here is an example of a LaMark file: https://github.com/beala/lamark/blob/master
 
 And the cooresponding HTML: http://media.usrsb.in/lamark-demo/demo.html
 
+**For detailed documentation about the LaMark language and its tags, please see the [wiki](https://github.com/beala/lamark/wiki).**
+
 #Overview
 LaMark allows LaTeX to be embedded in Markdown files. Running a mixed LaTeX/Markdown file (called a LaMark file) through the LaMark processor will result in a pure Markdown file, along with a set of images that correspond to the embedded LaTeX. For example, consider this LaMark file:
 
@@ -88,154 +90,9 @@ To generate this yourself, drop that tag in a text file, and run it through the 
 lamark -f lamarkfile.lm
 ```
 
-Please see the tag reference for the other tags and arguments that are available.
+Please see the [tag reference](https://github.com/beala/lamark/wiki/Tag-Reference) for the other tags and arguments that are available.
 
-#Language Reference
-
-LaMark supports two different types of tags: binary and unary. Binary tags have an opening tag and a closing tag (similar to `div` in HTML). Unary tags only have an opening tag (similar to `br` in HTML).
-
-**Binary**:
-
-```
-{% TAG_NAME %} [TEXT] {% end %}
-```
-
-**Unary**:
-
-```
-{% TAG_NAME %}
-```
-
-The opening tag of both unary and binary tags have the same syntax:
-
-```
-{% TAG_NAME [ARG1 [ARG2 [...]]]] [ARG1_NAME="ARG1_VAL" [ARG2_NAME="ARG2_VAL" [...]]] %}
-```
-
-Where each argument is separated by a space, positional arguments come before keyword arguments, and the value of a keyword argument must be wrapped in double quotes. Most sane whitespacing is allowed. For example, the following is valid:
-
-```
-{% math
-            "http://media.usrsb.in/"
-            "Some LaTeX"
-            imgZoom="2500"
-%}
-a^2
-{%end%}
-```
-
-**At this time, tags cannot contain `%}`, and keyword values cannot contain `"`.**
-
-LaMark tags can be escaped with a backslash. Consider the following LaMark:
-
-```
-\{%math%}
-a^2
-\{%end%}
-```
-
-This will be rendered as:
-
-```
-{%math%}
-a^2
-{%end%}
-```
-
-Backslashes are only escape characters if they come before a LaMark tag. In all other cases, they carry no special meaning and will be left alone by the LaMark processor.
-
-Nesting of tags is allowed. Nested tags are evaluated from the inner-most tag outward. So, first the inner-most tag is evaluated, and the result is returned/embedded in the tag it's nested in. The evaluation continues up the chain.
-
-## Tag Reference
-
-Currently, LaMark supports the following tags:
-- `math`: For inline LaTeX equations. Shorthand for LaTeX's `$` symbol.
-- `displaymath`: For larger LaTeX equations. Shorthand for `$$`.
-- `pre`: Sets the preamble in the generated LaTeX.
-- `latex`: Catchall tag for arbitrary LaTeX. Feeds this straight to the LaTeX interpreter.
-
-### math
-
-This renders inline LaTeX equations. Put anything in here that you would put between the `$` symbols (or `math` environment) in LaTeX.
-
-_Example:_
-
-`{%math%}a^2{%end%}`
-
-_Positional arguments:_
-
-`[path [alt [title [imgName [imgZoom]]]]]`
-
-_Keyword arguments:_
-
-Every positional argument has a keyword argument of the same name.
-
-_Argument descriptions:_
-
-- `path`: The path to the image used in the Markdown image tag.
-- `alt`: The alt text used in the Markdown image tag.
-- `title`: The title text used in the Markdown image tag.
-- `imgName`: The image name for the generated image, including extension (eg, `my-image.png`)
-- `imgZoom`: The zoom parameter used by `dvipng`, which corresponds to the dimensions of the generated image. `2000` is the default value. Larger values result in larger images (more zoomed in).
-
-### displaymath
-
-This is the same as `math` except the rendered images are larger and indented. Put anything here that you would put between the `$$` (or `displaymath` environment) in LaTeX.
-
-### latex
-
-This tag lets you embed arbitrary LaTeX. It is recommended that you use the `\documentclass{standalone}` for a tight crop of the generated image.
-
-_Example:_
-
-```
-{%latex%}
-\documentclass{standalone}
-\begin{document}
-{\LaTeX}
-\end{document}
-{%end%}
-```
-
-_Positional arguments:_
-
-`[path [alt [title [imgName [imgZoom]]]]]`
-
-_Keyword arguments:_
-
-Every positional argument has a keyword argument of the same name.
-
-_Argument descriptions:_
-
-- `path`: The path to the image used in the Markdown image tag. Defaults to "" (current directory).
-- `alt`: The alt text used in the Markdown image tag. Defaults to `path`.
-- `title`: The title text used in the Markdown image tag. Defaults to "".
-- `imgName`: The image name for the generated image, including extension (eg, `my-image.png`)
-- `imgZoom`: The zoom parameter used by `dvipng`, which corresponds to the dimensions of the generated image. `2000` is the default value. Larger values result in larger images (more zoomed in).
-
-
-### pre
-
-This sets the preamble for all of the tags following this tag. The preamble is the section after the `documentclass` declaration, but before the `\begin{document}`. This is useful if the built in arguments for a tag don't offer enough customization.
-
-_Example:_
-
-```
-{%pre%}
-\usepackage[T1]{fontenc}
-\usepackage[light,math]{iwona}
-{%end%}
-```
-
-_Positional arguments:_
-
-None.
-
-_Keyword arguments:_
-
-None.
-
-# Command Line
+#Command Line
 Using the command line tool is self-explanatory:
 
 ```
@@ -279,4 +136,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-

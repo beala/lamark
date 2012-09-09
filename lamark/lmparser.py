@@ -50,7 +50,9 @@ class LmParser(object):
                         isinstance(next_tok, lexertokens.BIN_START) or
                         isinstance(next_tok, lexertokens.UNARY_TAG)):
                     escaped_tok = next_tok.raw_match
-                elif isinstance(next_tok, lexertokens.OTHER):
+                elif (
+                        isinstance(next_tok, lexertokens.OTHER) or
+                        isinstance(next_tok, lexertokens.ESCAPE)):
                     # Next token isn't anything special. Just treat the escape
                     # as a backslash.
                     escaped_tok = "\\" + next_tok.raw_match

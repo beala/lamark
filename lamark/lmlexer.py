@@ -118,7 +118,7 @@ class LmLexer(object):
         return trailing_char_count
 
     def _test_bin_start(self, string, n):
-        matchObj = re.match(t_BIN_START, string[n:])
+        matchObj = re.match(t_BIN_START, string[n:], re.DOTALL)
         if matchObj:
             n += len(matchObj.group(0))
             new_tok = lexertokens.BIN_START(matchObj.group(0), self._newline_count)
@@ -128,7 +128,7 @@ class LmLexer(object):
             return (n, None)
 
     def _test_bin_end(self, string, n):
-        matchObj = re.match(t_BIN_END, string[n:])
+        matchObj = re.match(t_BIN_END, string[n:], re.DOTALL)
         if matchObj:
             n += len(matchObj.group(0))
             new_tok = lexertokens.BIN_END(matchObj.group(0), self._newline_count)
@@ -138,7 +138,7 @@ class LmLexer(object):
             return (n, None)
 
     def _test_unary_tag(self, string, n):
-        matchObj = re.match(t_UNARY_TAG, string[n:])
+        matchObj = re.match(t_UNARY_TAG, string[n:], re.DOTALL)
         if matchObj:
             n += len(matchObj.group(0))
             new_tok = lexertokens.UNARY_TAG(matchObj.group(0), self._newline_count)
