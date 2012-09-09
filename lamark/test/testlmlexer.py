@@ -24,61 +24,94 @@ class testLmLexer(unittest.TestCase):
                 str(other_tok),
                 "text")
 
-    def test_lstart_tok(self):
-        "Test one LSTART Tag"
+    def test_bin_start_tok(self):
+        "Test one BIN_START Tag"
         tok_stream = self.lexer.lex("{%latex%}")
-        lstart_tok = iter(tok_stream).next()
+        bin_start_tok = iter(tok_stream).next()
         self.assertIsInstance(
-                lstart_tok,
-                lexertokens.LSTART)
+                bin_start_tok,
+                lexertokens.BIN_START)
         self.assertEqual(
-                str(lstart_tok),
+                str(bin_start_tok),
                 "{%latex%}")
 
-    def test_lend_tok(self):
-        "Test one LSTART Tag"
-        tok_stream = self.lexer.lex("{%end%}")
-        lend_tok = iter(tok_stream).next()
+    def test_bin_start_ref_tok(self):
+        "Test one BIN_START ref Tag"
+        tok_stream = self.lexer.lex("{%ref%}")
+        bin_start_tok = iter(tok_stream).next()
         self.assertIsInstance(
-                lend_tok,
-                lexertokens.LEND)
+                bin_start_tok,
+                lexertokens.BIN_START)
         self.assertEqual(
-                str(lend_tok),
+                str(bin_start_tok),
+                "{%ref%}")
+
+    def test_bin_end_tok(self):
+        "Test one BIN_END Tag"
+        tok_stream = self.lexer.lex("{%end%}")
+        bin_end_tok = iter(tok_stream).next()
+        self.assertIsInstance(
+                bin_end_tok,
+                lexertokens.BIN_END)
+        self.assertEqual(
+                str(bin_end_tok),
                 "{%end%}")
 
-    def test_lstart_lend(self):
-        "LSTART Followed by LEND"
+    def test_bin_start_bin_end(self):
+        "BIN_START Followed by BIN_END"
         tok_stream = self.lexer.lex(
                 "{%latex%}{%end%}")
         tok_iter = iter(tok_stream)
-        lstart_tok = tok_iter.next()
+        bin_start_tok = tok_iter.next()
         self.assertIsInstance(
-                lstart_tok,
-                lexertokens.LSTART)
+                bin_start_tok,
+                lexertokens.BIN_START)
         self.assertEqual(
-                str(lstart_tok),
+                str(bin_start_tok),
                 "{%latex%}")
-        lend_tok = tok_iter.next()
+        bin_end_tok = tok_iter.next()
         self.assertIsInstance(
-                lend_tok,
-                lexertokens.LEND)
+                bin_end_tok,
+                lexertokens.BIN_END)
         self.assertEqual(
-                str(lend_tok),
+                str(bin_end_tok),
                 "{%end%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
-    def test_lstart_other_lend(self):
-        "LSTART followed by OTHER followed by LEND"
+    def test_bin_start_ref_bin_end(self):
+        "RSTART Followed by REND"
+        tok_stream = self.lexer.lex(
+                "{%ref%}{%end%}")
+        tok_iter = iter(tok_stream)
+        bin_start_tok = tok_iter.next()
+        self.assertIsInstance(
+                bin_start_tok,
+                lexertokens.BIN_START)
+        self.assertEqual(
+                str(bin_start_tok),
+                "{%ref%}")
+        bin_end_tok = tok_iter.next()
+        self.assertIsInstance(
+                bin_end_tok,
+                lexertokens.BIN_END)
+        self.assertEqual(
+                str(bin_end_tok),
+                "{%end%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
+
+    def test_bin_start_other_bin_end(self):
+        "BIN_START followed by OTHER followed by BIN_END"
         tok_stream = self.lexer.lex(
                 "{%latex%}other{%end%}")
         tok_iter = iter(tok_stream)
-        lstart_tok = tok_iter.next()
+        bin_start_tok = tok_iter.next()
         self.assertIsInstance(
-                lstart_tok,
-                lexertokens.LSTART)
+                bin_start_tok,
+                lexertokens.BIN_START)
         self.assertEqual(
-                str(lstart_tok),
+                str(bin_start_tok),
                 "{%latex%}")
         other_tok = tok_iter.next()
         self.assertIsInstance(
@@ -87,12 +120,41 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
                 str(other_tok),
                 "other")
-        lend_tok = tok_iter.next()
+        bin_end_tok = tok_iter.next()
         self.assertIsInstance(
-                lend_tok,
-                lexertokens.LEND)
+                bin_end_tok,
+                lexertokens.BIN_END)
         self.assertEqual(
-                str(lend_tok),
+                str(bin_end_tok),
+                "{%end%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
+
+    def test_rstart_other_rend(self):
+        "BIN_START followed by OTHER followed by BIN_END"
+        tok_stream = self.lexer.lex(
+                "{%ref%}other{%end%}")
+        tok_iter = iter(tok_stream)
+        bin_start_tok = tok_iter.next()
+        self.assertIsInstance(
+                bin_start_tok,
+                lexertokens.BIN_START)
+        self.assertEqual(
+                str(bin_start_tok),
+                "{%ref%}")
+        other_tok = tok_iter.next()
+        self.assertIsInstance(
+                other_tok,
+                lexertokens.OTHER)
+        self.assertEqual(
+                str(other_tok),
+                "other")
+        bin_end_tok = tok_iter.next()
+        self.assertIsInstance(
+                bin_end_tok,
+                lexertokens.BIN_END)
+        self.assertEqual(
+                str(bin_end_tok),
                 "{%end%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
@@ -109,8 +171,8 @@ class testLmLexer(unittest.TestCase):
                 str(escape_tok),
                 "\\")
 
-    def test_escape_lstart(self):
-        "ESCAPE followed by LSTART"
+    def test_escape_bin_start(self):
+        "ESCAPE followed by BIN_START"
         tok_stream = self.lexer.lex(
                 "\\{%latex%}")
         tok_iter = iter(tok_stream)
@@ -121,18 +183,40 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
                 str(escape_tok),
                 "\\")
-        lstart_tok = tok_iter.next()
+        bin_start_tok = tok_iter.next()
         self.assertIsInstance(
-            lstart_tok,
-            lexertokens.LSTART)
+            bin_start_tok,
+            lexertokens.BIN_START)
         self.assertEqual(
-            str(lstart_tok),
+            str(bin_start_tok),
             "{%latex%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
-    def test_escape_lend(self):
-        "ESCAPE followed by LEND"
+    def test_escape_rstart(self):
+        "ESCAPE followed by BIN_START"
+        tok_stream = self.lexer.lex(
+                "\\{%ref%}")
+        tok_iter = iter(tok_stream)
+        escape_tok = tok_iter.next()
+        self.assertIsInstance(
+                escape_tok,
+                lexertokens.ESCAPE)
+        self.assertEqual(
+                str(escape_tok),
+                "\\")
+        bin_start_tok = tok_iter.next()
+        self.assertIsInstance(
+            bin_start_tok,
+            lexertokens.BIN_START)
+        self.assertEqual(
+            str(bin_start_tok),
+            "{%ref%}")
+        with self.assertRaises(StopIteration):
+            tok_iter.next()
+
+    def test_escape_bin_end(self):
+        "ESCAPE followed by BIN_END"
         tok_stream = self.lexer.lex(
                 "\\{%end%}")
         tok_iter = iter(tok_stream)
@@ -143,102 +227,102 @@ class testLmLexer(unittest.TestCase):
         self.assertEqual(
                 str(escape_tok),
                 "\\")
-        lend_tok = tok_iter.next()
+        bin_end_tok = tok_iter.next()
         self.assertIsInstance(
-                lend_tok,
-                lexertokens.LEND)
+                bin_end_tok,
+                lexertokens.BIN_END)
         self.assertEqual(
-                str(lend_tok),
+                str(bin_end_tok),
                 "{%end%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
-    def test_lend_whitespace_1(self):
-        "Whitespace before LSTART"
+    def test_bin_end_whitespace_1(self):
+        "Whitespace before BIN_START"
         tok_stream = self.lexer.lex(
                 "{%   latex%}")
         tok_iter = iter(tok_stream)
-        lstart_tok = tok_iter.next()
+        bin_start_tok = tok_iter.next()
         self.assertIsInstance(
-            lstart_tok,
-            lexertokens.LSTART)
+            bin_start_tok,
+            lexertokens.BIN_START)
         self.assertEqual(
-            str(lstart_tok),
+            str(bin_start_tok),
             "{%   latex%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
-    def test_lend_whitespace_2(self):
-        "Whitespace after LSTART"
+    def test_bin_end_whitespace_2(self):
+        "Whitespace after BIN_START"
         tok_stream = self.lexer.lex(
                 "{%   latex    %}")
         tok_iter = iter(tok_stream)
-        lstart_tok = tok_iter.next()
+        bin_start_tok = tok_iter.next()
         self.assertIsInstance(
-            lstart_tok,
-            lexertokens.LSTART)
+            bin_start_tok,
+            lexertokens.BIN_START)
         self.assertEqual(
-            str(lstart_tok),
+            str(bin_start_tok),
             "{%   latex    %}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
-    def test_lstart_keywork_args(self):
+    def test_bin_start_keywork_args(self):
         "Basic keyword arg"
         tok_stream = self.lexer.lex(
                 "{%latex arg=\"value\"%}")
         tok_iter = iter(tok_stream)
-        lstart_tok = tok_iter.next()
+        bin_start_tok = tok_iter.next()
         self.assertIsInstance(
-            lstart_tok,
-            lexertokens.LSTART)
+            bin_start_tok,
+            lexertokens.BIN_START)
         self.assertEqual(
-            str(lstart_tok),
+            str(bin_start_tok),
             "{%latex arg=\"value\"%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
-    def test_lstart_positional_args(self):
+    def test_bin_start_positional_args(self):
         "Basic positional arg"
         tok_stream = self.lexer.lex(
                 "{%latex \"value\"%}")
         tok_iter = iter(tok_stream)
-        lstart_tok = tok_iter.next()
+        bin_start_tok = tok_iter.next()
         self.assertIsInstance(
-            lstart_tok,
-            lexertokens.LSTART)
+            bin_start_tok,
+            lexertokens.BIN_START)
         self.assertEqual(
-            str(lstart_tok),
+            str(bin_start_tok),
             "{%latex \"value\"%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
-    def test_lstart_positional_keyword_args(self):
+    def test_bin_start_positional_keyword_args(self):
         "Basic positional AND keyword arg"
         tok_stream = self.lexer.lex(
                 "{%latex \"value\" arg=\"value\"%}")
         tok_iter = iter(tok_stream)
-        lstart_tok = tok_iter.next()
+        bin_start_tok = tok_iter.next()
         self.assertIsInstance(
-            lstart_tok,
-            lexertokens.LSTART)
+            bin_start_tok,
+            lexertokens.BIN_START)
         self.assertEqual(
-            str(lstart_tok),
+            str(bin_start_tok),
             "{%latex \"value\" arg=\"value\"%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()
 
-    def test_lstart_url_positional_keyword_args(self):
+    def test_bin_start_url_positional_keyword_args(self):
         "Test complex arg value (url with hyphen)"
         tok_stream = self.lexer.lex(
                 "{%latex \"http://example-com.com\" arg=\"http://example-com.com\"%}")
         tok_iter = iter(tok_stream)
-        lstart_tok = tok_iter.next()
+        bin_start_tok = tok_iter.next()
         self.assertIsInstance(
-            lstart_tok,
-            lexertokens.LSTART)
+            bin_start_tok,
+            lexertokens.BIN_START)
         self.assertEqual(
-            str(lstart_tok),
+            str(bin_start_tok),
                 "{%latex \"http://example-com.com\" arg=\"http://example-com.com\"%}")
         with self.assertRaises(StopIteration):
             tok_iter.next()

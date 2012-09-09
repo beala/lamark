@@ -5,25 +5,46 @@ import lamarksyntaxerror
 
 class TagParser(object):
     t_ARG = r"\w+"
-    t_FUNC_NAME = r"{%\s*(\w+)"
+    #t_FUNC_NAME = r"{%\s*(\w+)"
+    t_FUNC_NAME = r"{%\s*([a-zA-Z-0-9_]+)"
     t_ASSIGN = r"="
-    t_VALUE = r'"([a-zA-Z0-9_ \./:\\-]*)"'
+    #t_VALUE = r'"([a-zA-Z0-9_ \./:\\-]*)"'
+    t_VALUE = r'"([^"]*)"'
     t_IGNORE = r"(?:\s|%})*"
 
     def __init__(self, args):
         pass
 
     def parse(self, ast):
-        new_ast = []
-        for node in ast:
-            if isinstance(node, lmast.Markdown):
-                new_ast.append(node)
-                continue
-            elif isinstance(node, lmast.Latex):
-                args, kwargs = self._process_tag(node)
-                new_ast.append(lmast.Latex(node.string, node.lineno, args, kwargs))
-                continue
-        return new_ast
+        """Parses the tags of the nodes in a LaMark AST."""
+        parsed_ast = lmast.map_postorder(ast, self.tag_parse_dispatch)
+        return parsed_ast
+
+    def tag_parse_dispatch(self, node):
+        """Parses the tags of one node."""
+        if isinstance(node, lmast.Markdown):
+            return node
+        elif isinstance(node, lmast.Str):
+            return node
+        elif isinstance(node, lmast.Document):
+            return node
+        elif isinstance(node, lmast.BinTag):
+            args, kwargs = self._process_tag(node)
+            return lmast.BinTag(
+                        node.children,
+                        node.lineno,
+                        node.raw_tag,
+                        args,
+                        kwargs)
+        elif isinstance(node, lmast.UnaryTag):
+            args, kwargs = self._process_tag(node)
+            return lmast.UnaryTag(
+                        node.lineno,
+                        node.raw_tag,
+                        args,
+                        kwargs)
+        else:
+            raise Exception("Oops. Something broke in the tag parser.")
 
     def _process_tag(self, latex_tag):
         self.tag_lineno = latex_tag.lineno
@@ -43,11 +64,11 @@ class TagParser(object):
         i = 0
         ff = 0
         t_stream = []
-        for i in xrange(len(latex_tag.args)):
+        for i in xrange(len(latex_tag.raw_tag)):
             if i < ff:
                 continue
             for test in token_tests:
-                (ff, node)= test(latex_tag.args, i)
+                (ff, node)= test(latex_tag.raw_tag, i)
                 if i < ff:
                     # Fast forwarded, but ignore whichever characters
                     # we've fast forwarded past.

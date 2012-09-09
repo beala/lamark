@@ -1,10 +1,10 @@
 # Demo Of Latex + Markdown
 
 LaMark allows LaTeX equations to be inserted into Markdown documents. For example: {%ref%}
-Notice that tags can also be nested. Here's the same equation in another form: {%math imgName="pythag2.png" path="http://media.usrsb.in/lamark-demo/" %}
+Another form: {%math imgName="pythag2.png" %}
 b^2=c^2-a^2
 {%end%}.{%end%}
-{% math imgName="pythag.png" path="http://media.usrsb.in/lamark-demo/" %}
+{% math imgName="pythag.png" %}
 a^2+b^2=c^2
 {% end%}
 
@@ -12,18 +12,16 @@ The footnote was also generated using a LaMark tag.
 
 Of course, more complicated formulas are possible:{%ref%}The normal distribution.{%end%}
 
-{% displaymath alt="Bell Curve" path="http://media.usrsb.in/lamark-demo/"%}
+{% displaymath alt="Bell Curve"%}
 f(x,\mu ,\sigma^2) = \frac{1}{\sigma \sqrt{2\pi}}e^{-\frac{1}{2}(\frac{x-\mu}{\sigma})^2}
 {% end%}
 
-If you like, you can also embed arbitrary LaTeX using the `\{%latex%}` tag. For example: {%latex
-path="http://media.usrsb.in/lamark-demo/"%}
-\documentclass{article}
-\pagestyle{empty}
+If you like, you can also embed arbitrary {%latex%}
+\documentclass{standalone}
 \begin{document}
 {\LaTeX}
 \end{document}
-{%end%}
+{%end%} using the `\{%latex%}` tag.
 
 Once the the document has been written, running it through the LaMark processor is easy:{%ref%}
 Check it out at [the github page](https://github.com/beala/lamark).

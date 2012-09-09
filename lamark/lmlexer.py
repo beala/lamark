@@ -3,15 +3,28 @@ import lexertokens
 import tokenstream
 import tagplugins
 
+def build_tag_regex(plugin_dict):
+    """Given a plugin dict (probably from tagplugins) build an 'or' regex
+       group. Something like: (?:latex|ref)
+    """
+    func_name_list = []
+    for func_tuple in plugin_dict:
+        for func_name in func_tuple:
+            func_name_list.append(func_name)
+    regex = '|'.join(func_name_list)
+    return '(?:' + regex + ')'
+
 t_ESCAPE = "\\"
-#_func_name = r'(?:end)[a-zA-Z0-9_]+'
-_func_name = r'(?:latex)'
-_arg_name = r'[a-zA-Z0-9_]*'
-_arg_value  = r'"[a-zA-Z0-9_ \./:\\-]*"'
-_arg = r'(\s*(' + _arg_name + r'\s*=)?\s*' + _arg_value + r'\s*)'
-#t_LSTART = r'{%\s*' + _func_name + r'\s*' + _arg + r'*\s*%}'
-t_LSTART = r'{%\s*latex\s*[a-zA-Z0-9_./:\-"\s=%]*%}'
-t_LEND = r"{%\s*end\s*%}"
+t_BIN_START = (r'{%\s*'+
+        build_tag_regex(tagplugins.binary_tag_plugins) +
+        r'(?:\s+((?!%}).)*%}|\s*%})')
+        #r'\s*((?!%}).)*%}')
+        #r'(?:\s+[a-zA-Z0-9_./:\-"\s=%]*%}|\s*%})')
+t_BIN_END = r"{%\s*end\s*%}"
+t_UNARY_TAG = (r'{%\s*'+
+        build_tag_regex(tagplugins.unary_tag_plugins) +
+        r'(?:\s+((?!%}).)*%}|\s*%})')
+        #r'(?:\s+[a-zA-Z0-9_./:\-"\s=%]*%}|\s*%})')
 t_NEWLINE = r'\n'
 
 class LmLexer(object):
@@ -25,12 +38,7 @@ class LmLexer(object):
         # characters that don't match any token get put in a catch-all
         # other_acc. We need to know what line this other_acc started on.
         self._acc_newline_count = 1
-        self._init_func_names()
-
-    def _init_func_names(self):
-        func_names = tagplugins.tag_plugins.keys()
-        func_names_regex = r"|".join(func_names)
-        _func_name = r"(?:" +func_names_regex + r")"
+        #self._init_func_names()
 
     def lex(self, string):
         """Lexes the string into a TokenStream of tokens.
@@ -45,8 +53,9 @@ class LmLexer(object):
         tests = [
                 self._test_newline,
                 self._test_escape,
-                self._test_lstart,
-                self._test_lend,
+                self._test_bin_start,
+                self._test_bin_end,
+                self._test_unary_tag,
                 ]
         for i in xrange(len(string)):
             # Fast forward `i` to `ff`
@@ -82,8 +91,13 @@ class LmLexer(object):
                 other_acc += string[i]
 
         if other_acc:
+            trailing_newline_count = self._count_trailing_char(other_acc, "\n")
             # Flush the `other_acc` if it contains anything.
-            t_stream.append(lexertokens.OTHER(other_acc, self._newline_count))
+            t_stream.append(
+                    lexertokens.OTHER(
+                        other_acc,
+                        self._newline_count - trailing_newline_count)
+            )
 
         return tokenstream.TokenStream(t_stream)
 
@@ -94,21 +108,40 @@ class LmLexer(object):
                 newline_count += 1
         return newline_count
 
-    def _test_lstart(self, string, n):
-        matchObj = re.match(t_LSTART, string[n:])
+    def _count_trailing_char(self, string, target_char):
+        trailing_char_count = 0
+        for char in reversed(string):
+            if char == target_char:
+                trailing_char_count += 1
+            else:
+                break
+        return trailing_char_count
+
+    def _test_bin_start(self, string, n):
+        matchObj = re.match(t_BIN_START, string[n:], re.DOTALL)
         if matchObj:
             n += len(matchObj.group(0))
-            new_tok = lexertokens.LSTART(matchObj.group(0), self._newline_count)
+            new_tok = lexertokens.BIN_START(matchObj.group(0), self._newline_count)
             self._newline_count += self._count_newlines(matchObj.group(0))
             return (n, new_tok)
         else:
             return (n, None)
 
-    def _test_lend(self, string, n):
-        matchObj = re.match(t_LEND, string[n:])
+    def _test_bin_end(self, string, n):
+        matchObj = re.match(t_BIN_END, string[n:], re.DOTALL)
         if matchObj:
             n += len(matchObj.group(0))
-            new_tok = lexertokens.LEND(matchObj.group(0), self._newline_count)
+            new_tok = lexertokens.BIN_END(matchObj.group(0), self._newline_count)
+            self._newline_count += self._count_newlines(matchObj.group(0))
+            return (n, new_tok)
+        else:
+            return (n, None)
+
+    def _test_unary_tag(self, string, n):
+        matchObj = re.match(t_UNARY_TAG, string[n:], re.DOTALL)
+        if matchObj:
+            n += len(matchObj.group(0))
+            new_tok = lexertokens.UNARY_TAG(matchObj.group(0), self._newline_count)
             self._newline_count += self._count_newlines(matchObj.group(0))
             return (n, new_tok)
         else:

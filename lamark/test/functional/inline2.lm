@@ -1,1 +1,1 @@
-inline{%latex%}a^2{%end%}inline
+inline{%math%}a^2{%end%}inline

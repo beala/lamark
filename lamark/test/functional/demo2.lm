@@ -1,8 +1,8 @@
 #Some LaTeX
-{% latex "http://media.usrsb.in/" %}
+{% math "http://media.usrsb.in/" %}
 a^2+b^2=c^2
 {% end %}
 
-{% latex "http://media.usrsb.in/" imgName="one-half.png" %}
+{% math "http://media.usrsb.in/" imgName="one-half.png" %}
 \frac{1}{2}
 {% end %}

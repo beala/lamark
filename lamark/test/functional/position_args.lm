@@ -1,1 +1,1 @@
-{%latex "http://media.usrsb.in/" "A Squared" imgZoom="0" %}a^2{%end%}
+{%math "http://media.usrsb.in/" "A Squared" imgZoom="0" %}a^2{%end%}

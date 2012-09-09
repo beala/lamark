@@ -1,20 +1,22 @@
 #Introduction
-LaMark is a tool for embedding LaTeX equations in Markdown files. It is designed as a companion to Markdown blogging platforms such as Octopress and Jekyll.
+LaMark is a tool for embedding LaTeX in Markdown files. It is designed as a companion to Markdown blogging platforms such as Octopress and Jekyll.
 
 Here is an example of a LaMark file: https://github.com/beala/lamark/blob/master/lamark/test/functional/demo1.lm
 
 And the cooresponding HTML: http://media.usrsb.in/lamark-demo/demo.html
+
+**For detailed documentation about the LaMark language and its tags, please see the [wiki](https://github.com/beala/lamark/wiki).**
 
 #Overview
 LaMark allows LaTeX to be embedded in Markdown files. Running a mixed LaTeX/Markdown file (called a LaMark file) through the LaMark processor will result in a pure Markdown file, along with a set of images that correspond to the embedded LaTeX. For example, consider this LaMark file:
 
 ```
 #Some LaTeX
-{% latex "http://media.usrsb.in/" %}
+{% math "http://media.usrsb.in/" %}
 a^2+b^2=c^2
 {% end %}
 
-{% latex "http://media.usrsb.in/" imgName="one-half.png" %}
+{% math "http://media.usrsb.in/" imgName="one-half.png" %}
 \frac{1}{2}
 {% end %}
 ```
@@ -53,84 +55,44 @@ lamark -f example.lm | ./Markdown.pl > example.html
 
 Tested on Python 2.7.2+
 
-#Usage
-Following Octopress's lead, LaMark tags are wrapped in a bracket and percent sign as follows:
+#Tutorial
+
+Let's start by embedding an equation in our document using the `math` tag. The following LaMark embeds the equation `a^2`:
 
 ```
-{% latex %} [LaTeX] {% end %}
+{% math %} a^2 {% end %}
 ```
 
-LaMark tags also accept positional and keyword arguments. The positional arguments must come before the keyword arguments:
+Here we have the LaTeX equation `a^2` wrapped in a `math` tag. Notice that the tag starts with `{%math%}` and ends with a generic `{%end%}` tag. All tags that require a closing tag end with the generic `{%end%}` tag. As can be seen, LaMark resembles HTML, where strings are wrapped in tags to represent formatting/styling.
+
+Just like HTML, LaMark tags also support arguments. Here is the same `math` tag, with the path to the generated image set to `http://media.usrsb.in/eq`:
 
 ```
-{% latex "http://media.usrsb.in/" "pythag.png" imgZoom="3000" %}
-a^2+b^2=c^2
-{% end %}
+{% math path="http://media.usrsb.in/eq/" %} a^2 {% end %}
 ```
 
-Where `http://media.usrsb.in/` is path to the image, which will be used in the resultant Markdown file, `pythag.png` is the name of the image that will be generated, and `3000` is the `zoom` parameter that dvipng uses to size the image. The syntax is as follows:
-
+Notice that the `path` really is just a path. There is no image name. Because we've omitted an image name, the image names will start at `0.png` and increase. We also have the option of explicitly setting an image name:
 ```
-{% latex [path [alt [imgZoom [imgName]]]] %}
-[LaTeX]
-{% end %}
-```
-
-The syntax for the keyword arguments is:
-
-```
-{% latex [ARG_NAME="ARG_VALUE"] %}
-[LaTeX]
-{% end %}
-```
-
-Where the possible arguments are:
-
-- `path`: The path to the image used in the Markdown image tag.
-- `alt`: The alt text used in the Markdown image tag.
-- `imgName`: The image name for the generated image, including extension (eg, `my-image.png`)
-- `imgZoom`: The zoom parameter used by `dvipng`, which coorresponds to the dimensions of the generated image. `2000` is the default value. Larger values result in larger images (more zoomed in).
-
-As stated above, positional and keyword arguments can be used together, but the positional arguments must come first:
-
-```
-{%latex [POSITIONAL ARGS] [KEYWORD_ARGS] %}
-[LaTeX]
-{%end%}
-```
-
-LaMark does its best to be flexible, and allow for whitespace in tags. The following is valid LaMark:
-
-```
-{% latex
-            "http://media.usrsb.in/"
-            "Some LaTeX"                                                          imgZoom="2500"
-            %}a^2
-            {%end            %}
-```
-
-
-
-In short, most sensible (and some wacky) whitespacing styles are valid.
-
-LaMark tags can be escaped with a backslash. Consider the following LaMark:
-
-```
-\{%latex%}
+{% math path="http://media.usrsb.in/eq/" imgName="a_squared.png" %}
 a^2
-\{%end%}
+{% end %}
 ```
 
-This will be rendered as:
+The generated image will now be called `a_squared.png`, and the generated Markdown will look like:
 
 ```
-{%latex%}
-a^2
-{%end%}
+![http://media.usrsb.in/eq/a_squared.png](http://media.usrsb.in/eq/a_squared.png)
 ```
 
-Backslashes are only escape characters if they come before a LaMark tag. In all other cases, they carry no special meaning and will be left alone by the LaMark processor.
+To generate this yourself, drop that tag in a text file, and run it through the LaMark processor:
 
+```
+lamark -f lamarkfile.lm
+```
+
+Please see the [tag reference](https://github.com/beala/lamark/wiki/Tag-Reference) for the other tags and arguments that are available.
+
+#Command Line
 Using the command line tool is self-explanatory:
 
 ```
@@ -174,4 +136,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-

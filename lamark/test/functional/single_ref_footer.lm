@@ -1,0 +1,7 @@
+Here, we're going to test a ref.{%ref%}This is a ref.{%end%}
+
+Some text.
+
+Some more text.
+
+{%ref-footer %}

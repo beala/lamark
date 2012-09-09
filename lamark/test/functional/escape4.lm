@@ -1,0 +1,3 @@
+Blah blah.{%ref%}\{%latex%}a^2\{%end%}{%end%}
+
+{%ref-footer%}

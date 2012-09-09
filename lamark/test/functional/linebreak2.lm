@@ -1,4 +1,4 @@
-{% latex
+{% math
             "http://media.usrsb.in/"
             "Some LaTeX"                                                          imgZoom="2500"
             %}a^2

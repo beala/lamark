@@ -1,0 +1,46 @@
+{%pre%}\usepackage[T1]{fontenc}
+\usepackage[light,math]{iwona}
+{%end%}
+A ref.{%ref%}One ref.{%end%} Another ref.{%ref%}Two ref.{%end%} And another.{%ref%}Three ref.{%end%}
+
+And another.{%ref%}Four ref.{%end%}
+
+And another.{%ref%}Five ref.{%end%}
+
+And another.{%ref%}Six ref.{%end%}
+
+And another.{%ref%}Some LaTeX: {%math%}e^{-\frac{1}{2}(\frac{x-\mu}{\sigma})^2}{%end%}{%end%}
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+## References
+{%ref-footer%}
