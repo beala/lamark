@@ -148,30 +148,29 @@ Nesting of tags is allowed. Nested tags are evaluated from the inner-most tag ou
 
 ## Tag Reference
 
-Currently, LaMark supports 7 tags:
-- `math`: For LaTeX equations. Shorthand for LaTeX's `$` symbol.
+Currently, LaMark supports the following tags:
+- `math`: For inline LaTeX equations. Shorthand for LaTeX's `$` symbol.
 - `displaymath`: For larger LaTeX equations. Shorthand for `$$`.
-- `picture`: For LaTeX pictures. Shorthand for the `picture` module.
 - `pre`: Sets the preamble in the generated LaTeX.
-- `doc`: Catchall tag for arbitrary LaTeX. Feeds this straight to the LaTeX interpreter.
+- `latex`: Catchall tag for arbitrary LaTeX. Feeds this straight to the LaTeX interpreter.
 
 ### math
 
 This renders inline LaTeX equations. Put anything in here that you would put between the `$` symbols (or `math` environment) in LaTeX.
 
-**Example:**
+_Example:_
 
 `{%math%}a^2{%end%}`
 
-**Positional arguments:**
+_Positional arguments:_
 
 `[path [alt [title [imgName [imgZoom]]]]]`
 
-**Keyword arguments:**
+_Keyword arguments:_
 
 Every positional argument has a keyword argument of the same name.
 
-**Argument descriptions:**
+_Argument descriptions:_
 
 - `path`: The path to the image used in the Markdown image tag.
 - `alt`: The alt text used in the Markdown image tag.
@@ -187,7 +186,7 @@ This is the same as `math` except the rendered images are larger and indented. P
 
 This tag lets you embed arbitrary LaTeX. It is recommended that you use the `\documentclass{standalone}` for a tight crop of the generated image.
 
-**Example:**
+_Example:_
 
 ```
 {%latex%}
@@ -198,15 +197,15 @@ This tag lets you embed arbitrary LaTeX. It is recommended that you use the `\do
 {%end%}
 ```
 
-**Positional arguments:**
+_Positional arguments:_
 
 `[path [alt [title [imgName [imgZoom]]]]]`
 
-**Keyword arguments:**
+_Keyword arguments:_
 
 Every positional argument has a keyword argument of the same name.
 
-**Argument descriptions:**
+_Argument descriptions:_
 
 - `path`: The path to the image used in the Markdown image tag. Defaults to "" (current directory).
 - `alt`: The alt text used in the Markdown image tag. Defaults to `path`.
@@ -219,7 +218,7 @@ Every positional argument has a keyword argument of the same name.
 
 This sets the preamble for all of the tags following this tag. The preamble is the section after the `documentclass` declaration, but before the `\begin{document}`. This is useful if the built in arguments for a tag don't offer enough customization.
 
-**Example:**
+_Example:_
 
 ```
 {%pre%}
@@ -228,11 +227,11 @@ This sets the preamble for all of the tags following this tag. The preamble is t
 {%end%}
 ```
 
-**Positional arguments:**
+_Positional arguments:_
 
 None.
 
-**Keyword arguments:**
+_Keyword arguments:_
 
 None.
 
