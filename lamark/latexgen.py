@@ -11,9 +11,9 @@ import textwrap
 
 MATH_NAME = "math"
 DISPLAYMATH_NAME = "displaymath"
-PICTURE_NAME = "picture"
+#PICTURE_NAME = "picture"
 PREAMBLE_NAME = "pre"
-DOC_NAME = "doc"
+DOC_NAME = "latex"
 
 class LatexGen(object):
     """Given a peice of Latex, generate an image, and the markdown
@@ -78,8 +78,9 @@ class LatexGen(object):
                 "imgName": "",
                 "alt": "",
                 "title": None,
-                "x": 0,
-                "y": 0,
+                #"x": 0,
+                #"y": 0,
+                #"unitlength": None,
                 }
 
     def generate(self, children, lineno, args, kwargs):
@@ -94,7 +95,7 @@ class LatexGen(object):
         self._process_tag_args(lineno, args, kwargs)
         self._validate_args(args, kwargs)
         if (
-                kwargs["func_name"] == PICTURE_NAME or
+                #kwargs["func_name"] == PICTURE_NAME or
                 kwargs["func_name"] == MATH_NAME or
                 kwargs["func_name"] == DISPLAYMATH_NAME or
                 kwargs["func_name"] == DOC_NAME):
@@ -138,24 +139,25 @@ class LatexGen(object):
     def _process_doc_args(self, lineno, args, kwargs):
         self._process_math_args(lineno, args, kwargs)
 
-    def _process_picture_args(self, lineno, args, kwargs):
-        self.prefs_dict["func_name"] = kwargs["func_name"]
-        self.prefs_dict["x"] = args[0] if len(args) > 0 else "0"
-        self.prefs_dict["y"] = args[1] if len(args) > 1 else "0"
-        self.prefs_dict["path"] = args[2] if len(args) > 2 else ""
-        self.prefs_dict["alt"] = args[3] if len(args) > 3 else ""
-        self.prefs_dict["title"] = args[4] if len(args) > 4 else None
-        self.prefs_dict["imgZoom"] = args[5] if len(args) > 5 else "2000"
-        self.prefs_dict["imgName"] = args[6] if len(args) > 6 else ""
-        for key, value in kwargs.items():
-            if key not in self.prefs_dict:
-                raise lamarkargumenterror.LaMarkArgumentError(
-                        "Unrecognized argument: %s" % key,
-                        lineno)
-            self.prefs_dict[key] = value
+    #def _process_picture_args(self, lineno, args, kwargs):
+        #self.prefs_dict["func_name"] = kwargs["func_name"]
+        #self.prefs_dict["x"] = args[0] if len(args) > 0 else "0"
+        #self.prefs_dict["y"] = args[1] if len(args) > 1 else "0"
+        #self.prefs_dict["unitlength"] = args[2] if len(args) > 2 else None
+        #self.prefs_dict["path"] = args[3] if len(args) > 3 else ""
+        #self.prefs_dict["alt"] = args[4] if len(args) > 4 else ""
+        #self.prefs_dict["title"] = args[5] if len(args) > 5 else None
+        #self.prefs_dict["imgZoom"] = args[6] if len(args) > 6 else "2000"
+        #self.prefs_dict["imgName"] = args[7] if len(args) > 7 else ""
+        #for key, value in kwargs.items():
+            #if key not in self.prefs_dict:
+                #raise lamarkargumenterror.LaMarkArgumentError(
+                        #"Unrecognized argument: %s" % key,
+                        #lineno)
+            #self.prefs_dict[key] = value
 
-        if len(self.prefs_dict["path"]) > 0 and self.prefs_dict["path"][-1] != "/":
-            self.prefs_dict["path"] += "/"
+        #if len(self.prefs_dict["path"]) > 0 and self.prefs_dict["path"][-1] != "/":
+            #self.prefs_dict["path"] += "/"
 
     def _process_pre_args(self, lineno, args, kwargs):
         self.prefs_dict["func_name"] = kwargs["func_name"]
@@ -166,8 +168,8 @@ class LatexGen(object):
                 kwargs["func_name"] == MATH_NAME or
                 kwargs["func_name"] == DISPLAYMATH_NAME):
             self._process_math_args(lineno, args, kwargs)
-        elif kwargs["func_name"] == PICTURE_NAME:
-            self._process_picture_args(lineno, args, kwargs)
+        #elif kwargs["func_name"] == PICTURE_NAME:
+            #self._process_picture_args(lineno, args, kwargs)
         elif kwargs["func_name"] == DOC_NAME:
             self._process_doc_args(lineno, args, kwargs)
         elif kwargs["func_name"] == PREAMBLE_NAME:
@@ -191,11 +193,9 @@ class LatexGen(object):
         if self.prefs_dict["func_name"] == DOC_NAME:
             return latex_body.strip()
 
-        latex_string = "\documentclass{article}\n"
+        latex_string = "\documentclass[fleqn]{standalone}\n"
         if self.latex_preamble is not None:
             latex_string += self.latex_preamble + "\n"
-        else:
-            latex_string += "\pagestyle{empty}\n"
 
         if self.prefs_dict["func_name"] == MATH_NAME:
             latex_string += "\usepackage{mathtools}\n"
@@ -211,13 +211,15 @@ class LatexGen(object):
             latex_string += latex_body.strip()
             latex_string += "\\end{displaymath}\n"
             latex_string += "\\end{document}\n"
-        elif self.prefs_dict["func_name"] == PICTURE_NAME:
-            latex_string += "\\begin{document}\n"
-            latex_string += "\\begin{picture}(%s,%s)\n" % (
-                    self.prefs_dict["x"], self.prefs_dict["y"])
-            latex_string += latex_body + "\n"
-            latex_string += "\\end{picture}\n"
-            latex_string += "\\end{document}\n"
+        #elif self.prefs_dict["func_name"] == PICTURE_NAME:
+            #latex_string += "\\begin{document}\n"
+            #if self.prefs_dict["unitlength"] is not None:
+                #latex_string += "\\setlength{\\unitlength}{%s}\n" % self.prefs_dict["unitlength"]
+            #latex_string += "\\begin{picture}(%s,%s)\n" % (
+                    #self.prefs_dict["x"], self.prefs_dict["y"])
+            #latex_string += latex_body + "\n"
+            #latex_string += "\\end{picture}\n"
+            #latex_string += "\\end{document}\n"
         else:
             raise Exception("Oops.Something broke in the LaTeX code gen.")
 

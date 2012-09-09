@@ -5,9 +5,9 @@ binary_tag_plugins = {
         (
             "math",
             "displaymath",
-            "picture",
+            #"picture",
             "pre",
-            "doc"):latexgen.LatexGen,
+            "latex"):latexgen.LatexGen,
         ("ref",):refgen.RefGen,
     }
 
