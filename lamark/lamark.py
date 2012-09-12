@@ -9,6 +9,39 @@ import logging
 
 VERSION="0.1.5"
 
+class DictToObj(object):
+    """Turn a dict into an object."""
+    def __init__(self, entries):
+        self.__dict__.update(entries)
+
+def lamark(lamark_str, image_dir):
+    dict_args = {
+            "f":None,
+            "o":None,
+            "i":image_dir,
+            "debug":False,
+            "warn":False,
+    }
+    args=DictToObj(dict_args)
+    logging.basicConfig(
+            level=logging.ERROR,
+            format='%(levelname)s:%(message)s')
+    lexer = lmlexer.LmLexer(args)
+    token_stream = lexer.lex(lamark_str)
+    logging.debug("Token stream:\n" + str(token_stream))
+    # Parse
+    parser = lmparser.LmParser(args)
+    ast = parser.parse(token_stream)
+    logging.debug("AST:\n" + str(ast))
+    # Parse tags
+    tparser = tagparser.TagParser(args)
+    tag_ast = tparser.parse(ast)
+    logging.debug("Tag AST:\n" + str(tag_ast))
+    # Gen markdown and images
+    code_gen = mdcodegen.MdCodeGen(args)
+    md = code_gen.generate(tag_ast)
+    return md
+
 def main():
     cli_parser = argparse.ArgumentParser(
             description="A tool for embedding LaTeX in Markdown.")
