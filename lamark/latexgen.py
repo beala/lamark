@@ -39,6 +39,17 @@ class LatexGen(object):
             Use the `with` keyword so the __exit__ and __enter__
             methods get used.
         """
+        # Find where the filename extension begins in args.f
+        if args.f is not None:
+            ext_period = args.f.rfind(".")
+            # Remove the filename extension
+            if ext_period > 0:
+                self.img_prefix = args.f[:ext_period]
+            else:
+                self.img_prefix = args.f
+        else:
+            self.img_prefix = None
+        self._default_zoom = args.zoom
         self._fn_gen = self._gen_name()
         self._reset_prefs()
         self._tex_tmp_dir = self._create_tmp_dir()
@@ -125,7 +136,7 @@ class LatexGen(object):
         self.prefs_dict["alt"] = args[1] if len(args) > 1 else None
         self.prefs_dict["title"] = args[2] if len(args) > 2 else None
         self.prefs_dict["imgName"] = args[3] if len(args) > 3 else None
-        self.prefs_dict["imgZoom"] = args[4] if len(args) > 4 else "2000"
+        self.prefs_dict["imgZoom"] = args[4] if len(args) > 4 else self._default_zoom
         for key, value in kwargs.items():
             if key not in self.prefs_dict:
                 raise lamarkargumenterror.LaMarkArgumentError(
@@ -190,8 +201,12 @@ class LatexGen(object):
 
     def _gen_name(self):
         counter = 0
+        if self.img_prefix is None:
+            img_prefix = ""
+        else:
+            img_prefix = self.img_prefix + "-"
         while True:
-            yield str(counter) + ".png"
+            yield img_prefix + str(counter) + ".png"
             counter += 1
 
     def _gen_latex(self, latex_body):
@@ -273,6 +288,7 @@ class LatexGen(object):
         dvipng_call = [
                 "dvipng",
                 "-T", "tight",
+                "-bg", "Transparent",
                 "-x", image_zoom,
                 "-z", "6",
                 tex_tmp.name[0:-3] + "dvi",

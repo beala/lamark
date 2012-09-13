@@ -14,13 +14,14 @@ class DictToObj(object):
     def __init__(self, entries):
         self.__dict__.update(entries)
 
-def lamark(lamark_str, image_dir):
+def lamark(lamark_str, image_dir, name, imgZoom=2000):
     dict_args = {
-            "f":None,
+            "f":name,
             "o":None,
             "i":image_dir,
             "debug":False,
             "warn":False,
+            "zoom":str(imgZoom),
     }
     args=DictToObj(dict_args)
     logging.basicConfig(
@@ -62,6 +63,11 @@ def main():
             metavar="DIR",
             default=None,
             help="Image directory.")
+    cli_parser.add_argument(
+            "--zoom",
+            default="2000",
+            metavar="ZOOM",
+            help="Default zoom value to pass to dvipng. Defaults to 2000")
     cli_parser.add_argument(
             "--debug",
             action='store_true',
