@@ -35,7 +35,7 @@ class LmParser(object):
                 else:
                     token_stack.append(
                             lmast.Markdown(
-                                str(cur_token),
+                                cur_token.raw_match,
                                 cur_token.lineno)
                     )
             elif isinstance(cur_token, lexertokens.ESCAPE):
