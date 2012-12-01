@@ -11,7 +11,6 @@ import textwrap
 
 MATH_NAME = "math"
 DISPLAYMATH_NAME = "displaymath"
-#PICTURE_NAME = "picture"
 PREAMBLE_NAME = "pre"
 DOC_NAME = "latex"
 
@@ -50,6 +49,8 @@ class LatexGen(object):
         else:
             self.img_prefix = None
         self._default_zoom = args.zoom
+        self._default_path = getattr(args, "img_path", "")
+        self._gen_images = getattr(args, "gen_images", True)
         self._fn_gen = self._gen_name()
         self._reset_prefs()
         self._tex_tmp_dir = self._create_tmp_dir()
@@ -132,7 +133,7 @@ class LatexGen(object):
 
     def _process_math_args(self, lineno, args, kwargs):
         self.prefs_dict["func_name"] = kwargs["func_name"]
-        self.prefs_dict["path"] = args[0] if len(args) > 0 else None
+        self.prefs_dict["path"] = args[0] if len(args) > 0 else self._default_path
         self.prefs_dict["alt"] = args[1] if len(args) > 1 else None
         self.prefs_dict["title"] = args[2] if len(args) > 2 else None
         self.prefs_dict["imgName"] = args[3] if len(args) > 3 else None
@@ -246,6 +247,18 @@ class LatexGen(object):
         return latex_string
 
     def _compile_latex(self, latex_body):
+        if self.prefs_dict["imgName"] is None:
+            image_name = self._fn_gen.next()
+        else:
+            image_name = self.prefs_dict["imgName"]
+        if self.prefs_dict["path"] is not None:
+            full_path_image_name = self.prefs_dict["path"] + image_name
+        else:
+            full_path_image_name = image_name
+
+        if self._gen_images == False:
+            return full_path_image_name
+
         latex_string = self._gen_latex(latex_body)
         logging.debug("Latex String: " + repr(latex_string))
 
@@ -277,10 +290,6 @@ class LatexGen(object):
                     str(latex_body) + '".\nLaTeX threw error: "' + str(out)+ '".')
 
         # Generate file for png and convert dvi to png
-        if self.prefs_dict["imgName"] is None:
-            image_name = self._fn_gen.next()
-        else:
-            image_name = self.prefs_dict["imgName"]
         if self.prefs_dict["imgZoom"] is None:
             image_zoom = "2000"
         else:
@@ -304,10 +313,7 @@ class LatexGen(object):
         if p.returncode:
             raise CommandException("Error in call to dvipng: " + str(out))
 
-        if self.prefs_dict["path"] is not None:
-            image_name = self.prefs_dict["path"] + image_name
-
-        return image_name
+        return full_path_image_name
 
 class CommandException(Exception):
     def __init__(self, msg=""):

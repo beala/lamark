@@ -1,3 +1,6 @@
+0.2.1:
+- Unified the lamark API function in lamark.py with the command line parser.
+
 0.2.0:
 - The "latex" tag has now been renamed to "math".
 - Added a new "latex" tag that accepts any arbitrary LaTeX.
