@@ -96,21 +96,32 @@ Please see the [tag reference](https://github.com/beala/lamark/wiki/Tag-Referenc
 Using the command line tool is self-explanatory:
 
 ```
-% lamark -h
-usage: lamark [-h] [-f FILE] [-o FILE] [-i DIR] [--debug] [--warn] [--version]
+usage: lamark [-h] [-f FILE] [-o FILE] [-i DIR] [--zoom ZOOM] [--no-images]
+              [--image-path PATH] [--doc-name NAME] [--debug] [--warn]
+              [--version]
 
 A tool for embedding LaTeX in Markdown.
 
 optional arguments:
-  -h, --help  show this help message and exit
-  -f FILE     LaMark input file. Default is stdin.
-  -o FILE     Markdown output file. Images will be placed in same directory
-              unless overridden with -i. Defaults to stdout, in which case
-              images will be placed in the pwd.
-  -i DIR      Image directory.
-  --debug     Turn on debug messages.
-  --warn      Turn on warning messages.
-  --version   Display version.
+  -h, --help         show this help message and exit
+  -f FILE            LaMark input file. Default is stdin.
+  -o FILE            Markdown output file. Images will be placed in same
+                     directory unless overridden with -i. Defaults to stdout,
+                     in which case images will be placed in the pwd.
+  -i DIR             Image directory.
+  --zoom ZOOM        Default zoom value to pass to dvipng. Defaults to 2000
+  --no-images        Don't generate images, just generate markdown.
+  --image-path PATH  The generated markdown will point to the generated images
+                     in its source. This sets the default path used in these
+                     image tags. This is useful if you will be uploading the
+                     images to a server. The default path is relative to the
+                     generated file.
+  --doc-name NAME    If input is coming from stdin, use this option to give
+                     your document a name. This name can be used by the
+                     generation stages.
+  --debug            Turn on debug messages.
+  --warn             Turn on warning messages.
+  --version          Display version.
 ```
 
 #License
